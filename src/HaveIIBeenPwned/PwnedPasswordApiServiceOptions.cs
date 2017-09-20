@@ -1,4 +1,4 @@
-﻿namespace HaveIBeenPwnedValidator
+﻿namespace HaveIBeenPwned
 {
     /// <summary>
     /// Options for the <see cref="PwnedPasswordApiService"/>

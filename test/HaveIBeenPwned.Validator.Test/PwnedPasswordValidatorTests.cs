@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using HaveIBeenPwned;
 using HaveIBeenPwnedValidator;
 using Microsoft.AspNetCore.Identity.Test;
 using Moq;

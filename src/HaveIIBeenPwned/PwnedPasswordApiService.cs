@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace HaveIBeenPwnedValidator
+namespace HaveIBeenPwned
 {
     /// <summary>
     /// Uses the PwnedPasswords API to verify whether the password has been pwned
@@ -30,10 +30,14 @@ namespace HaveIBeenPwnedValidator
         }
 
         /// <inheritdoc />
-        public async Task<bool> HasPasswordBeenPwned(string password)
+        public async Task<bool> HasPasswordBeenPwned(string plainTextPassword)
         {
-            var sha1Password = SHA1Util.SHA1HashStringForUTF8String(password);
+            return await HasSha1PasswordBeenPwned(SHA1Util.SHA1HashStringForUTF8String(plainTextPassword));
+        }
 
+        /// <inheritdoc />
+        public async Task<bool> HasSha1PasswordBeenPwned(string sha1Password)
+        {
             var formContent = new FormUrlEncodedContent(
                 new Dictionary<string, string> { { "Password", sha1Password } });
 
@@ -112,6 +116,6 @@ namespace HaveIBeenPwnedValidator
             Dispose(true);
         }
         #endregion
-        
+
     }
 }

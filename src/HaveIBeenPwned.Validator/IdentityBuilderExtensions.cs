@@ -1,4 +1,5 @@
 using System;
+using HaveIBeenPwned;
 using HaveIBeenPwnedValidator;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -29,13 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The current Microsoft.AspNetCore.Identity.IdentityBuilder instance.</returns>
         public static IdentityBuilder AddPwnedPasswordApiValidator<TUser>(this IdentityBuilder builder, Action<PwnedPasswordApiServiceOptions> configure) where TUser : class
         {
-            var options = new PwnedPasswordApiServiceOptions();
-            if (configure != null)
-            {
-                configure(options);
-            }
-            builder.Services.AddSingleton<PwnedPasswordApiServiceOptions>();
-            builder.Services.AddSingleton<IPwnedPasswordService, PwnedPasswordApiService>();
+            builder.Services.AddPwnedPasswordApiService(configure);
             return builder.AddPasswordValidator<PwnedPasswordValidator<TUser>>();
         }
 
@@ -75,13 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The current Microsoft.AspNetCore.Identity.IdentityBuilder instance.</returns>
         public static IdentityBuilder AddPwnedPasswordFileValidator<TUser>(this IdentityBuilder builder, Action<PwnedPasswordFileServiceOptions> configure) where TUser : class
         {
-            var options = new PwnedPasswordFileServiceOptions();
-            if (configure != null)
-            {
-                configure(options);
-            }
-            builder.Services.AddSingleton<PwnedPasswordFileServiceOptions>();
-            builder.Services.AddSingleton<IPwnedPasswordService, PwnedPasswordFileService>();
+            builder.Services.AddPwnedPasswordFileService(configure);
             return builder.AddPasswordValidator<PwnedPasswordValidator<TUser>>();
         }
     }
