@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HaveIBeenPwnedValidator\HaveIBeenPwnedValidator.csproj" />
+    <ProjectReference Include="..\..\src\HaveIBeenPwned.Validator\HaveIBeenPwned.Validator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

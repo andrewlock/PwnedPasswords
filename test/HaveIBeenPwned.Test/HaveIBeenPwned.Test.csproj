@@ -2,12 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\..\samples\HaveIBeenPwned.Server.Sample\pwned-passwords-update-2.txt" Link="pwned-passwords-update-2.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="Moq" Version="4.7.99" />
     <PackageReference Include="xunit" Version="2.2.0" />
@@ -15,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HaveIBeenPwnedValidator\HaveIBeenPwnedValidator.csproj" />
+    <ProjectReference Include="..\..\src\HaveIIBeenPwned\HaveIIBeenPwned.csproj" />
   </ItemGroup>
 
   <ItemGroup>

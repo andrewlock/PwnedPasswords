@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
-namespace HaveIBeenPwnedValidator
+namespace HaveIBeenPwned
 {
     /// <summary>
     /// Check file lists to verify whether the password has been pwned
@@ -43,9 +43,14 @@ namespace HaveIBeenPwnedValidator
 
 
         /// <inheritdoc />
-        public Task<bool> HasPasswordBeenPwned(string password)
+        public async Task<bool> HasPasswordBeenPwned(string plainTextPassword)
         {
-            var sha1Password = SHA1Util.SHA1HashStringForUTF8String(password);
+            return await HasSha1PasswordBeenPwned(SHA1Util.SHA1HashStringForUTF8String(plainTextPassword));
+        }
+
+        /// <inheritdoc />
+        public Task<bool> HasSha1PasswordBeenPwned(string sha1Password)
+        {
             foreach (var file in _files)
             {
                 var isPwned = IsInFile(sha1Password, file);

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 
-namespace HaveIBeenPwnedValidator
+namespace HaveIBeenPwned
 {
     /// <summary>
     /// Options for the <see cref="PwnedPasswordFileService"/>

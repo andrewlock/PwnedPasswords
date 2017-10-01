@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using HaveIBeenPwned;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
 
