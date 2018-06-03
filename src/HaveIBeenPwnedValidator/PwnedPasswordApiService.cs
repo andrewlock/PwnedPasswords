@@ -36,9 +36,6 @@ namespace HaveIBeenPwnedValidator
             var sha1Prefix = sha1Password.Substring(0, 5);
             var sha1Suffix = sha1Password.Substring(5);
 
-            var formContent = new FormUrlEncodedContent(
-                new Dictionary<string, string> { { "Password", sha1Password } });
-
             var msg = new HttpRequestMessage(HttpMethod.Get, string.Format("{0}/{1}", _options.ApiUrl, sha1Prefix));
 
             var response = await _client.SendAsync(msg);
