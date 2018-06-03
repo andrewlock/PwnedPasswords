@@ -13,9 +13,9 @@
 
         /// <summary>
         /// The full URL of the API to call
-        /// Defaults to https://api.pwnedpasswords.com/range/
+        /// Defaults to https://api.pwnedpasswords.com/range
         /// </summary>
-        public string ApiUrl { get; set; } = "https://api.pwnedpasswords.com/range/";
+        public string ApiUrl { get; set; } = "https://api.pwnedpasswords.com/range";
 
         /// <summary>
         /// The minimum time between requests to the API in milliseconds
