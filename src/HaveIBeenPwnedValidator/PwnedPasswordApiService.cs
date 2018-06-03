@@ -48,27 +48,21 @@ namespace HaveIBeenPwnedValidator
             if (response.IsSuccessStatusCode)
             {
                 // Response was a success. Check to see if the SAH1 suffix is in the response body.
-                var isPwned = (await response.Content.ReadAsStringAsync()).Contains(sha1Suffix);
+                var content = await response.Content.ReadAsStringAsync();
+                var isPwned = content.Contains(sha1Suffix);
                 if (isPwned)
                 {
-                    _logger.LogDebug("HaveIBeenPwned API indicate the password has been pwned");
+                    _logger.LogDebug("HaveIBeenPwned API indicates the password has been pwned");
                     return true;
                 }
                 else
                 {
-                    _logger.LogDebug("HaveIBeenPwned API indicate the password has not been pwned");
+                    _logger.LogDebug("HaveIBeenPwned API indicates the password has not been pwned");
+                    return false;
                 }
             }
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                _logger.LogDebug("HaveIBeenPwned API indicate the password has not been pwned");
-            }
-            else
-            {
-                _logger.LogWarning("Unexepected response from API: {StatusCode}", response.StatusCode);
-            }
-
+            _logger.LogWarning("Unexepected response from API: {StatusCode}", response.StatusCode);
             return false;
         }
 
