@@ -33,47 +33,34 @@ namespace HaveIBeenPwnedValidator
         public async Task<bool> HasPasswordBeenPwned(string password)
         {
             var sha1Password = SHA1Util.SHA1HashStringForUTF8String(password);
+            var sha1Prefix = sha1Password.Substring(0, 5);
+            var sha1Suffix = sha1Password.Substring(5);
 
             var formContent = new FormUrlEncodedContent(
                 new Dictionary<string, string> { { "Password", sha1Password } });
 
-            var msg = new HttpRequestMessage(HttpMethod.Post, _options.ApiUrl)
-            {
-                Content = formContent,
-            };
+            var msg = new HttpRequestMessage(HttpMethod.Get, string.Format("{0}/{1}", _options.ApiUrl, sha1Prefix));
 
-            var response = await ThrottleRequest(() => _client.SendAsync(msg));
+            var response = await _client.SendAsync(msg);
 
-            return HandleResponse(response);
+            return await HandleResponse(response, sha1Suffix);
         }
 
-        private async Task<T> ThrottleRequest<T>(Func<Task<T>> action)
-        {
-            //wait for the semaphore to be available
-            await _semaphore.WaitAsync();
-
-            //run the task
-            var response = await action();
-
-            // This doesn't look right, but can't think what I should be doing at the moment. Probably needs to be a queue
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Task.Run(() =>
-            {
-                // wait on a background thread for the min required time
-                Thread.Sleep(_options.RateLimiteMilliSeconds);
-                _semaphore.Release();
-            });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-            return response;
-        }
-
-        protected virtual bool HandleResponse(HttpResponseMessage response)
+        protected async virtual Task<bool> HandleResponse(HttpResponseMessage response, string sha1Suffix)
         {
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("HaveIBeenPwned API indicate the password has been pwned");
-                return true;
+                // Response was a success. Check to see if the SAH1 suffix is in the response body.
+                var isPwned = (await response.Content.ReadAsStringAsync()).Contains(sha1Suffix);
+                if (isPwned)
+                {
+                    _logger.LogDebug("HaveIBeenPwned API indicate the password has been pwned");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogDebug("HaveIBeenPwned API indicate the password has not been pwned");
+                }
             }
 
             if (response.StatusCode == HttpStatusCode.NotFound)
