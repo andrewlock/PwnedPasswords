@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -36,6 +37,10 @@ namespace Microsoft.Extensions.DependencyInjection
             this IdentityBuilder builder, Action<PwnedPasswordValidatorOptions> configure) 
             where TUser : class
         {
+            if(!builder.Services.Any(x=>x.ServiceType == typeof(IPwnedPasswordsClient)))
+            {
+                builder.Services.AddPwnedPasswordHttpClient();
+            }
             builder.Services.Configure<PwnedPasswordValidatorOptions>(configure);
             return builder.AddPasswordValidator<PwnedPasswordValidator<TUser>>();
         }
