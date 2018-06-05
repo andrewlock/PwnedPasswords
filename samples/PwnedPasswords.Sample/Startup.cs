@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using PwnedPasswords.Sample.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using System.Net.Http;
+using System;
 
 namespace PwnedPasswords.Sample
 {
@@ -28,6 +31,12 @@ namespace PwnedPasswords.Sample
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+
+            // Explicitly configure the PwnedPassword client to timeout after 2 seconds, and retry 3 times
+            // The pwnedpassword API achieves 99% percentile of <1s, so this should be sufficient!
+            services.AddPwnedPasswordHttpClient()
+                  .AddTransientHttpErrorPolicy(p => p.RetryAsync(3))
+                  .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(2)));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
