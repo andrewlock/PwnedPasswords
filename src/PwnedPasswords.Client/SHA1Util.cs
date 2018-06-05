@@ -6,7 +6,7 @@ namespace PwnedPasswords.Client
     /// <summary>
     /// Utilities for generating a SHA1 hash
     /// </summary>
-    public static class SHA1Util
+    internal static class SHA1Util
     {
         private static readonly SHA1 _sha1 = SHA1.Create();
 
