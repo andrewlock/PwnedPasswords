@@ -1,10 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using PwnedPasswords.Client;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 
-namespace PwnedPasswords.Client
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extensions for registering the <see cref="IPwnedPasswordsClient"/> with the <see cref="IServiceCollection"/>
