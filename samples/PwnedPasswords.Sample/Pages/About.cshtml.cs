@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace PwnedPassports.Sample.Pages
+namespace PwnedPasswords.Sample.Pages
 {
-    public class ContactModel : PageModel
+    public class AboutModel : PageModel
     {
         public string Message { get; set; }
 
         public void OnGet()
         {
-            Message = "Your contact page.";
+            Message = "Your application description page.";
         }
     }
 }

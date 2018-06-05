@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace PwnedPassports.Sample.Data.Migrations
+namespace PwnedPasswords.Sample.Data.Migrations
 {
     public partial class CreateIdentitySchema : Migration
     {
