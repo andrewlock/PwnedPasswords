@@ -34,25 +34,30 @@ namespace PwnedPasswords.Client
             var sha1Password = SHA1Util.SHA1HashStringForUTF8String(password);
             var sha1Prefix = sha1Password.Substring(0, 5);
             var sha1Suffix = sha1Password.Substring(5);
-
-            var response = await _client.GetAsync("range/" + sha1Prefix, cancellationToken);
-            
-            if (response.IsSuccessStatusCode)
+            try
             {
-                // Response was a success. Check to see if the SAH1 suffix is in the response body.
-                var result = await Contains(response.Content, sha1Suffix);
-                if (result.isPwned)
-                {
-                    _logger.LogDebug("HaveIBeenPwned API indicates the password has been pwned");
-                }
-                else
-                {
-                    _logger.LogDebug("HaveIBeenPwned API indicates the password has not been pwned");
-                }
-                return result.isPwned;
-            }
-            _logger.LogWarning("Unexepected response from API: {StatusCode}", response.StatusCode);
+                var response = await _client.GetAsync("range/" + sha1Prefix, cancellationToken);
 
+                if (response.IsSuccessStatusCode)
+                {
+                    // Response was a success. Check to see if the SAH1 suffix is in the response body.
+                    var result = await Contains(response.Content, sha1Suffix);
+                    if (result.isPwned)
+                    {
+                        _logger.LogDebug("HaveIBeenPwned API indicates the password has been pwned");
+                    }
+                    else
+                    {
+                        _logger.LogDebug("HaveIBeenPwned API indicates the password has not been pwned");
+                    }
+                    return result.isPwned;
+                }
+                _logger.LogWarning("Unexepected response from API: {StatusCode}", response.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Pwned Password API. Assuming password is not pwned");
+            }
             return false;
         }
 
