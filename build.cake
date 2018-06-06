@@ -55,6 +55,7 @@ Task("Restore")
                 solution.ToString(),
                 new DotNetCoreBuildSettings()
                 {
+                    NoRestore = true,
                     Configuration = configuration,
                 });
         }
@@ -80,7 +81,7 @@ Task("Test")
                     //     .Append(artifactsDirectory.Path.CombineWithFilePath(project.GetFilenameWithoutExtension()).FullPath + ".xml"),
                     Configuration = configuration,
                     NoBuild = true,
-                    ArgumentCustomization  = builder => builder.Append("--filter Category!=Integration"),
+                    ArgumentCustomization  = builder => builder.Append(" --no-restore"),
                 });
         }
     });
