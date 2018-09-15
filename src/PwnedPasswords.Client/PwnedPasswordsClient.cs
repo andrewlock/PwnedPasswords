@@ -41,8 +41,9 @@ namespace PwnedPasswords.Client
                 if (response.IsSuccessStatusCode)
                 {
                     // Response was a success. Check to see if the SAH1 suffix is in the response body.
-                    var result = await Contains(response.Content, sha1Suffix);
-                    if (result.isPwned)
+                    var frequency = await Contains(response.Content, sha1Suffix);
+                    var isPwned = (frequency > 0);
+                    if (isPwned)
                     {
                         _logger.LogDebug("HaveIBeenPwned API indicates the password has been pwned");
                     }
@@ -50,7 +51,7 @@ namespace PwnedPasswords.Client
                     {
                         _logger.LogDebug("HaveIBeenPwned API indicates the password has not been pwned");
                     }
-                    return result.isPwned;
+                    return isPwned;
                 }
                 _logger.LogWarning("Unexepected response from API: {StatusCode}", response.StatusCode);
             }
@@ -61,7 +62,7 @@ namespace PwnedPasswords.Client
             return false;
         }
 
-        internal static async Task<(bool isPwned, int frequency)> Contains(HttpContent content, string sha1Suffix)
+        internal static async Task<int> Contains(HttpContent content, string sha1Suffix)
         {
             using (var streamReader = new StreamReader(await content.ReadAsStreamAsync()))
             {
@@ -73,12 +74,12 @@ namespace PwnedPasswords.Client
                         && string.Equals(segments[0], sha1Suffix, StringComparison.OrdinalIgnoreCase)
                         && int.TryParse(segments[1], out var count))
                     {
-                        return (true, count);
+                        return count;
                     }
                 }
             }
 
-            return (false, 0);
+            return 0;
 
         }
     }
