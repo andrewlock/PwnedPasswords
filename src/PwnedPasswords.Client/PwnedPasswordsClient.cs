@@ -62,7 +62,7 @@ namespace PwnedPasswords.Client
             return false;
         }
 
-        internal static async Task<int> Contains(HttpContent content, string sha1Suffix)
+        internal static async Task<long> Contains(HttpContent content, string sha1Suffix)
         {
             using (var streamReader = new StreamReader(await content.ReadAsStreamAsync()))
             {
@@ -72,7 +72,7 @@ namespace PwnedPasswords.Client
                     var segments = line.Split(':');
                     if (segments.Length == 2
                         && string.Equals(segments[0], sha1Suffix, StringComparison.OrdinalIgnoreCase)
-                        && int.TryParse(segments[1], out var count))
+                        && long.TryParse(segments[1], out var count))
                     {
                         return count;
                     }
