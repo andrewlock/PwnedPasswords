@@ -21,7 +21,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = GenerateRandomDataList(capacity);
 
             // instantiate filter and populate it with the inputs
-            var target = new BloomFilter<string>(capacity, errorRate, null);
+            var target = new BloomFilter(capacity, errorRate);
             foreach (var input in inputs)
             {
                 target.Add(input);
@@ -44,7 +44,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var errorRate = 0.0001F; // 0.01%
 
             // instantiate filter and populate it with a single random value
-            var target = new BloomFilter<string>(capacity, errorRate, null);
+            var target = new BloomFilter(capacity, errorRate);
             target.Add(Guid.NewGuid().ToString());
 
             // generate a new random value and check for it
@@ -59,7 +59,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var errorRate = 0.001F; // 0.1%
 
             // instantiate filter and populate it with random strings
-            var target = new BloomFilter<string>(capacity, errorRate, null);
+            var target = new BloomFilter(capacity, errorRate);
             for (var i = 0; i < capacity; i++)
             {
                 target.Add(Guid.NewGuid().ToString());
@@ -93,7 +93,7 @@ namespace PwnedPasswords.BloomFilter.Test
                 var errorRate = 0.01F; // 1%
 
                 // instantiate filter
-                var target = new BloomFilter<string>(capacity, errorRate, null);
+                var target = new BloomFilter(capacity, errorRate);
             });
         }
 
@@ -105,7 +105,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var errorRate = 0.01F; // 1%
 
             // instantiate filter and populate it with random strings
-            var target = new BloomFilter<string>(capacity, errorRate, null);
+            var target = new BloomFilter(capacity, errorRate);
             for (var i = 0; i < capacity; i++)
             {
                 target.Add(Guid.NewGuid().ToString());
@@ -121,7 +121,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var capacity = 2000000;
 
             // instantiate filter and populate it with random strings
-            var target = new BloomFilter<string>(capacity);
+            var target = new BloomFilter(capacity);
             for (var i = 0; i < capacity; i++)
             {
                 target.Add(Guid.NewGuid().ToString());
@@ -138,7 +138,7 @@ namespace PwnedPasswords.BloomFilter.Test
         {
             var capacity = 10000;
             var errorRate = 0.001F; // 0.1%
-            var target = new BloomFilter<string>(capacity, errorRate, null);
+            var target = new BloomFilter(capacity, errorRate);
             for (var i = 0; i < capacity; i++)
             {
                 target.Add(Guid.NewGuid().ToString());
@@ -168,7 +168,7 @@ namespace PwnedPasswords.BloomFilter.Test
             {
                 var errorRate = 0.1F;
                 var capacity = 0; // no good
-                var target = new BloomFilter<int>(capacity, errorRate, x => 0);
+                var target = new BloomFilter(capacity, errorRate);
             });
         }
 
@@ -179,7 +179,7 @@ namespace PwnedPasswords.BloomFilter.Test
             {
                 var errorRate = 10F; // no good
                 var capacity = 10;
-                var target = new BloomFilter<int>(capacity, errorRate, x => 0);
+                var target = new BloomFilter(capacity, errorRate);
             });
         }
     }
