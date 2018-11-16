@@ -9,7 +9,7 @@ namespace PwnedPasswords.BloomFilter
     /// <summary>
     /// A bloom filter used to hash strings
     /// </summary>
-    internal class BloomFilter
+    internal partial class BloomFilter
     {
         /// <summary>
         /// Creates a new Bloom filter, specifying an error rate of 1/capacity, using the optimal size for the underlying data structure based on the desired capacity and error rate, as well as the optimal number of hash functions.
@@ -66,7 +66,7 @@ namespace PwnedPasswords.BloomFilter
         /// <param name="hashFunctionCount">The number of hash functions used to create the <paramref name="arrayBits"/></param>
         /// <param name="capacity">The anticipated number of items that were added to the filter.</param>
         /// <param name="errorRate">The false-positive rate specified when creating the filter(e.g., 0.01F = 1%)</param>
-        internal BloomFilter(BitArray arrayBits, int hashFunctionCount, int capacity, float errorRate)
+        private BloomFilter(BitArray arrayBits, int hashFunctionCount, int capacity, float errorRate)
         {
             HashFunctionCount = hashFunctionCount;
             HashBits = new BitArray(arrayBits);
