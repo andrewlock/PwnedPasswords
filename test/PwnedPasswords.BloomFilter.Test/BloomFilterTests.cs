@@ -5,7 +5,7 @@ using Xunit;
 
 namespace PwnedPasswords.BloomFilter.Test
 {
-    public class FilterTest
+    public class BloomFilterTests
     {
         /// <summary>
         /// There should be no false negatives.
