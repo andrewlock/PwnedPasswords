@@ -21,8 +21,8 @@ namespace PwnedPasswords.BloomFilter.Test
             var newFilter = BloomFilter.Load(bytes);
 
             Assert.Equal(expectedHashFunctions, newFilter.HashFunctionCount);
-            Assert.Equal(expectedCapacity, newFilter.HashBits.Length);
-            Assert.Equal(filter.Capacity, newFilter.Capacity);
+            Assert.Equal(expectedCapacity, newFilter.HashBits.Count);
+            Assert.Equal(filter.TotalCapacity, newFilter.TotalCapacity);
             Assert.Equal(filter.ExpectedErrorRate, newFilter.ExpectedErrorRate);
         }
 
@@ -38,8 +38,8 @@ namespace PwnedPasswords.BloomFilter.Test
             var newFilter = BloomFilter.Load(bytes);
 
             Assert.Equal(expectedHashFunctions, newFilter.HashFunctionCount);
-            Assert.Equal(expectedCapacity, newFilter.HashBits.Length);
-            Assert.Equal(filter.Capacity, newFilter.Capacity);
+            Assert.Equal(expectedCapacity, newFilter.HashBits.Count);
+            Assert.Equal(filter.TotalCapacity, newFilter.TotalCapacity);
             Assert.Equal(filter.ExpectedErrorRate, newFilter.ExpectedErrorRate);
         }
 
@@ -218,7 +218,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = GeneratePseudoRandomDataList(capacity);
             var savedFilter = BloomFilter.Load(filePath);
 
-            Assert.Equal(inputs.Count, savedFilter.Capacity);
+            Assert.Equal(inputs.Count, savedFilter.TotalCapacity);
             // check again for each input
             foreach (var input in inputs)
             {

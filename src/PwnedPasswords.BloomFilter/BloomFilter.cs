@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using HashFunction = System.Func<string, int>;
 
 namespace PwnedPasswords.BloomFilter
@@ -11,12 +12,14 @@ namespace PwnedPasswords.BloomFilter
     /// </summary>
     internal partial class BloomFilter
     {
+        private const int MaxShards = 256;
+
         /// <summary>
         /// Creates a new Bloom filter, specifying an error rate of 1/capacity, using the optimal size for the underlying data structure based on the desired capacity and error rate, as well as the optimal number of hash functions.
         /// A secondary hash function will be provided for you if your type T is either string or int. Otherwise an exception will be thrown. If you are not using these types please use the overload that supports custom hash functions.
         /// </summary>
         /// <param name="capacity">The anticipated number of items to be added to the filter. More than this number of items can be added, but the error rate will exceed what is expected.</param>
-        public BloomFilter(int capacity) : this(capacity, BestErrorRate(capacity)) { }
+        public BloomFilter(long capacity) : this(capacity, BestErrorRate(capacity)) { }
 
         /// <summary>
         /// Creates a new Bloom filter, using the optimal size for the underlying data structure based on the desired capacity and error rate, as well as the optimal number of hash functions.
@@ -24,16 +27,16 @@ namespace PwnedPasswords.BloomFilter
         /// </summary>
         /// <param name="capacity">The anticipated number of items to be added to the filter. More than this number of items can be added, but the error rate will exceed what is expected.</param>
         /// <param name="errorRate">The acceptable false-positive rate (e.g., 0.01F = 1%)</param>
-        public BloomFilter(int capacity, float errorRate) : this(capacity, errorRate, BestM(capacity, errorRate), BestK(capacity, errorRate)) { }
+        public BloomFilter(long capacity, float errorRate) : this(capacity, errorRate, BestM(capacity, errorRate), BestK(capacity, errorRate)) { }
 
         /// <summary>
         /// Creates a new Bloom filter.
         /// </summary>
         /// <param name="capacity">The anticipated number of items to be added to the filter. More than this number of items can be added, but the error rate will exceed what is expected.</param>
         /// <param name="errorRate">The acceptable false-positive rate (e.g., 0.01F = 1%)</param>
-        /// <param name="m">The number of elements in the BitArray.</param>
+        /// <param name="shardsAndM">The number of BitArrays to use, and the number of bits in each BitArray</param>
         /// <param name="k">The number of hash functions to use.</param>
-        private BloomFilter(int capacity, float errorRate, int m, int k)
+        private BloomFilter(long capacity, float errorRate, (int Shards, int M) shardsAndM, int k)
         {
             // validate the params are in range
             if (capacity < 1)
@@ -47,16 +50,20 @@ namespace PwnedPasswords.BloomFilter
                     $"errorRate must be between 0 and 1, exclusive. Was {errorRate}");
             }
 
+            var (shards, m) = shardsAndM;
+
             if (m < 1) // from overflow in bestM calculation
             {
                 throw new ArgumentOutOfRangeException(
                     $"The provided capacity and errorRate values would result in an array of length > int.MaxValue. Please reduce either of these values. Capacity: {capacity}, Error rate: {errorRate}");
             }
 
-            Capacity = capacity;
+            ShardCapacity = (int) (capacity / shards);
             ExpectedErrorRate = errorRate;
             HashFunctionCount = k;
-            HashBits = new BitArray(m);
+            HashBits = Enumerable.Repeat(m, shards)
+                .Select(arraySize => new BitArray(arraySize))
+                .ToArray();
         }
 
         /// <summary>
@@ -64,13 +71,13 @@ namespace PwnedPasswords.BloomFilter
         /// </summary>
         /// <param name="arrayBits">The bloom filter bits</param>
         /// <param name="hashFunctionCount">The number of hash functions used to create the <paramref name="arrayBits"/></param>
-        /// <param name="capacity">The anticipated number of items that were added to the filter.</param>
+        /// <param name="shardCapacity">The anticipated number of items that were added to each BitArray.</param>
         /// <param name="errorRate">The false-positive rate specified when creating the filter(e.g., 0.01F = 1%)</param>
-        private BloomFilter(BitArray arrayBits, int hashFunctionCount, int capacity, float errorRate)
+        private BloomFilter(BitArray[] arrayBits, int hashFunctionCount, int shardCapacity, float errorRate)
         {
             HashFunctionCount = hashFunctionCount;
-            HashBits = new BitArray(arrayBits);
-            Capacity = capacity;
+            HashBits = arrayBits;
+            ShardCapacity = shardCapacity;
             ExpectedErrorRate = errorRate;
         }
 
@@ -94,12 +101,13 @@ namespace PwnedPasswords.BloomFilter
         public void Add(string item)
         {
             // start flipping bits for each hash of item
+            var shard = GetShard(item);
             var primaryHash = _primaryHash(item);
             var secondaryHash = _secondaryHash(item);
             for (var i = 0; i < HashFunctionCount; i++)
             {
                 var hash = ComputeHash(primaryHash, secondaryHash, i);
-                HashBits[hash] = true;
+                shard[hash] = true;
             }
         }
 
@@ -110,12 +118,13 @@ namespace PwnedPasswords.BloomFilter
         /// <returns></returns>
         public bool Contains(string item)
         {
+            var shard = GetShard(item);
             var primaryHash = _primaryHash(item);
             var secondaryHash = _secondaryHash(item);
             for (var i = 0; i < HashFunctionCount; i++)
             {
                 var hash = ComputeHash(primaryHash, secondaryHash, i);
-                if (HashBits[hash] == false)
+                if (shard[hash] == false)
                 {
                     return false;
                 }
@@ -126,16 +135,19 @@ namespace PwnedPasswords.BloomFilter
         /// <summary>
         /// The ratio of false to true bits in the filter. E.g., 1 true bit in a 10 bit filter means a truthiness of 0.1.
         /// </summary>
-        public double Truthiness => (double)TrueBits() / HashBits.Count;
+        public double Truthiness => (double)TrueBits() / TotalCapacity;
 
         private int TrueBits()
         {
             var output = 0;
-            foreach (bool bit in HashBits)
+            foreach (var shard in HashBits)
             {
-                if (bit == true)
+                foreach (bool bit in shard)
                 {
-                    output++;
+                    if (bit == true)
+                    {
+                        output++;
+                    }
                 }
             }
             return output;
@@ -146,17 +158,27 @@ namespace PwnedPasswords.BloomFilter
         /// </summary>
         private int ComputeHash(int primaryHash, int secondaryHash, int i)
         {
-            var resultingHash = (primaryHash + (i * secondaryHash)) % HashBits.Count;
+            var resultingHash = (primaryHash + (i * secondaryHash)) % ShardCapacity;
             return Math.Abs((int)resultingHash);
         }
 
         /// <summary>
         /// The provided capacity used to create the filter
         /// </summary>
-        public int Capacity { get; }
+        public long TotalCapacity => Shards * (long)ShardCapacity;
 
         /// <summary>
-        /// The expected error rate for the given <see cref="Capacity"/>
+        /// The number of BitArray shards in the filter
+        /// </summary>
+        public int Shards => HashBits.Count;
+
+        /// <summary>
+        /// The capacity of each <see cref="BitArray"/> shard in <see cref="HashBits"/>
+        /// </summary>
+        public int ShardCapacity { get; }
+
+        /// <summary>
+        /// The expected error rate for the given <see cref="TotalCapacity"/>
         /// </summary>
         public float ExpectedErrorRate { get; }
 
@@ -168,19 +190,38 @@ namespace PwnedPasswords.BloomFilter
         /// <summary>
         /// Get the filter as a bit array
         /// </summary>
-        public BitArray HashBits { get; }
+        public IReadOnlyList<BitArray> HashBits { get; }
 
-        private static int BestK(int capacity, float errorRate)
+        private static int BestK(long capacity, float errorRate)
         {
-            return (int)Math.Round(Math.Log(2.0) * BestM(capacity, errorRate) / capacity);
+            var (shards, m) = BestM(capacity, errorRate);
+            var shardCapacity = (int)(capacity / shards);
+            return (int)Math.Round(Math.Log(2.0) * m / shardCapacity);
         }
 
-        private static int BestM(int capacity, float errorRate)
+        private static (int Shards, int M) BestM(long capacity, float errorRate)
         {
-            return (int)Math.Ceiling(capacity * Math.Log(errorRate, (1.0 / Math.Pow(2, Math.Log(2.0)))));
+            // we only use a single set of 256 shards at the moment
+            var shardIncrement = 256; // 1 byte
+            var shards = 1;
+            while (shards < MaxShards)
+            {
+                var bestM = (long)Math.Ceiling(capacity * Math.Log(errorRate, (1.0 / Math.Pow(2, Math.Log(2.0)))));
+
+                if (bestM < int.MaxValue)
+                {
+                    return (1, (int)bestM);
+                }
+
+                capacity = capacity / shardIncrement;
+                shards = shards * shardIncrement;
+            }
+
+            // Still too big for us!
+            return (1, -1);
         }
 
-        private static float BestErrorRate(int capacity)
+        private static float BestErrorRate(long capacity)
         {
             var c = (float)(1.0 / capacity);
             if (c != 0)
@@ -189,7 +230,7 @@ namespace PwnedPasswords.BloomFilter
             }
             else
             {
-                return (float)Math.Pow(0.6185, int.MaxValue / capacity); // http://www.cs.princeton.edu/courses/archive/spring02/cs493/lec7.pdf
+                return (float)Math.Pow(0.6185, ((long)int.MaxValue * MaxShards) / capacity); // http://www.cs.princeton.edu/courses/archive/spring02/cs493/lec7.pdf
             }
         }
 
@@ -225,7 +266,7 @@ namespace PwnedPasswords.BloomFilter
         {
             unchecked
             {
-                int hash1 = (5381 << 16) + 5381; 
+                int hash1 = (5381 << 16) + 5381;
                 int hash2 = hash1;
 
                 for (int i = 0; i < str.Length; i += 2)
@@ -238,6 +279,18 @@ namespace PwnedPasswords.BloomFilter
 
                 return hash1 + (hash2 * 1566083941);
             }
+        }
+
+        private BitArray GetShard(string item)
+        {
+            if (Shards == 1 || string.IsNullOrEmpty(item))
+            {
+                return HashBits[0];
+            }
+
+            //we only support 256 shards atm, so keep it simple:
+            var shard = item[0];
+            return HashBits[shard];
         }
     }
 }

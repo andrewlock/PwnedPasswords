@@ -44,8 +44,8 @@ namespace PwnedPasswords.BloomFilter
         {
             private const int HeaderBytes =
                 4 // HashFunctionCount
-                + 4 // HashBits.Count
-                + 4 // Capacity
+                + 4 // HashBits.Count (shards)
+                + 4 // Shard Capacity
                 + 4; // ErrorRate
 
             public static BloomFilter Load(byte[] bytes)
@@ -56,49 +56,63 @@ namespace PwnedPasswords.BloomFilter
                 //read the number of hash functions
                 Span<byte> span = bytes;
                 var hashFunctionCount = span.Slice(0, 4).GetAsInt();
-                var bitArrayCapacity = span.Slice(4, 4).GetAsInt();
-                var filterCapacity = span.Slice(8, 4).GetAsInt();
+                var shardCount = span.Slice(4, 4).GetAsInt();
+                var shardCapacity = span.Slice(8, 4).GetAsInt();
                 var filterErrorRate = span.Slice(12, 4).GetAsFloat();
-                AssertExpectedLength(bytes, bitArrayCapacity);
+                AssertExpectedLength(bytes, shardCount, shardCapacity);
 
-                var slicedBytes = span.Slice(HeaderBytes).ToArray();
-                var bitArray = new BitArray(slicedBytes);
-                bitArray.Length = bitArrayCapacity;
+                var index = HeaderBytes;
+                var bitArrays = new BitArray[shardCount];
+                var shardBytes = GetBytesCount(shardCapacity);
 
-                return new BloomFilter(bitArray, hashFunctionCount, filterCapacity, filterErrorRate);
+                for (int i = 0; i < shardCount; i++)
+                {
+                    var slicedBytes = span.Slice(index, shardBytes).ToArray();
+                    bitArrays[i] = new BitArray(slicedBytes);
+                    bitArrays[i].Length = shardCapacity;
+                }
+
+                return new BloomFilter(bitArrays, hashFunctionCount, shardCapacity, filterErrorRate);
             }
 
             public static byte[] Save(BloomFilter filter)
             {
-                int filterBytes = filter.HashBits.Count / 8;
-                if (filterBytes * 8 != filter.HashBits.Count)
-                {
-                    // partially filled final byte
-                    filterBytes++;
-                }
-                var arrayLength = filterBytes + HeaderBytes;
+                var shardBytes = GetBytesCount(filter.ShardCapacity);
+                var arrayLength = (long)shardBytes*filter.Shards + HeaderBytes;
                 var data = new byte[arrayLength];
 
                 // save the headers
                 filter.HashFunctionCount.GetAsBytes().CopyTo(data, 0);
-                filter.HashBits.Count.GetAsBytes().CopyTo(data, 4);
-                filter.Capacity.GetAsBytes().CopyTo(data, 8);
+                filter.Shards.GetAsBytes().CopyTo(data, 4);
+                filter.ShardCapacity.GetAsBytes().CopyTo(data, 8);
                 filter.ExpectedErrorRate.GetAsBytes().CopyTo(data, 12);
 
                 // now copy the actual data
-                filter.HashBits.CopyTo(data, 16);
+                var index = HeaderBytes;
+                foreach (var hashBits in filter.HashBits)
+                {
+                    hashBits.CopyTo(data, index);
+                    index += shardBytes;
+                }
 
                 return data;
             }
 
-            static void AssertExpectedLength(byte[] bytes, int capacity)
+            static int GetBytesCount(int shardCapacity)
             {
-                int expectedBytes = capacity / 8;
-                if (expectedBytes * 8 != capacity)
+                var shardBytes = shardCapacity / 8;
+                if (shardBytes * 8 != shardCapacity)
                 {
                     // partially filled final byte
-                    expectedBytes++;
+                    shardBytes++;
                 }
+
+                return shardBytes;
+            }
+
+            static void AssertExpectedLength(byte[] bytes, int shards, int shardCapacity)
+            {
+                var expectedBytes = (long)GetBytesCount(shardCapacity) * shards;
                 expectedBytes += HeaderBytes; // + HeaderBytes for capacity values at start of array
 
                 if (expectedBytes != bytes.Length)
