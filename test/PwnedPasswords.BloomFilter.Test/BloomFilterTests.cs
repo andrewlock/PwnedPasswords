@@ -182,5 +182,15 @@ namespace PwnedPasswords.BloomFilter.Test
                 var target = new BloomFilter(capacity, errorRate);
             });
         }
+
+        [Fact]
+        public void LargeNumberOfValuesCausesOverflow()
+        {
+            const int capacity = 517_238_891;
+            const float errorRate = 0.001f;
+
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new BloomFilter(capacity, errorRate));
+        }
     }
 }

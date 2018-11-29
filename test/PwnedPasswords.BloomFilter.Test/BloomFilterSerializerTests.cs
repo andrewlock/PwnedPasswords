@@ -17,7 +17,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var expectedCapacity = filter.HashBits.Count;
             var expectedHashFunctions = filter.HashFunctionCount;
 
-            var bytes = BloomFilter.Save(filter);
+            var bytes = filter.Save();
             var newFilter = BloomFilter.Load(bytes);
 
             Assert.Equal(expectedHashFunctions, newFilter.HashFunctionCount);
@@ -34,7 +34,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var expectedCapacity = filter.HashBits.Count;
             var expectedHashFunctions = filter.HashFunctionCount;
 
-            var bytes = BloomFilter.Save(filter);
+            var bytes = filter.Save();
             var newFilter = BloomFilter.Load(bytes);
 
             Assert.Equal(expectedHashFunctions, newFilter.HashFunctionCount);
@@ -51,13 +51,13 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = GenerateRandomDataList(requiredCapacity);
             filter.AddRange(inputs);
 
-            var bytes = BloomFilter.Save(filter);
+            var bytes = filter.Save();
             var originalBytes = new byte[bytes.Length];
             bytes.CopyTo(originalBytes, 0);
 
             var newFilter = new BloomFilter(requiredCapacity);
             newFilter.AddRange(inputs);
-            var newBytes = BloomFilter.Save(newFilter);
+            var newBytes = newFilter.Save();
 
             Assert.Equal(bytes.Length, newBytes.Length);
             for (var i = 0; i < bytes.Length; i++)
@@ -75,13 +75,13 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = GenerateRandomDataList(requiredCapacity);
             filter.AddRange(inputs);
 
-            var bytes = BloomFilter.Save(filter);
+            var bytes = filter.Save();
             var originalBytes = new byte[bytes.Length];
             bytes.CopyTo(originalBytes, 0);
 
             var newFilter = new BloomFilter(requiredCapacity, errorRate);
             newFilter.AddRange(inputs);
-            var newBytes = BloomFilter.Save(newFilter);
+            var newBytes = newFilter.Save();
 
             Assert.Equal(bytes.Length, newBytes.Length);
             for (var i = 0; i < bytes.Length; i++)
@@ -98,12 +98,12 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = GenerateRandomDataList(requiredCapacity);
             filter.AddRange(inputs);
 
-            var bytes = BloomFilter.Save(filter);
+            var bytes = filter.Save();
             var originalBytes = new byte[bytes.Length];
             bytes.CopyTo(originalBytes, 0);
 
             var newFilter = BloomFilter.Load(bytes);
-            var newBytes = BloomFilter.Save(newFilter);
+            var newBytes = newFilter.Save();
 
             Assert.Equal(originalBytes.Length, newBytes.Length);
             for (var i = 0; i < originalBytes.Length; i++)
@@ -133,7 +133,7 @@ namespace PwnedPasswords.BloomFilter.Test
             }
 
             // round trip the filter
-            var bytes = BloomFilter.Save(target);
+            var bytes = target.Save();
             var newFilter = BloomFilter.Load(bytes);
 
             // check again for each input
@@ -168,7 +168,7 @@ namespace PwnedPasswords.BloomFilter.Test
             }
 
             // round trip the filter
-            BloomFilter.Save(target, filePath);
+            target.Save(filePath);
             var newFilter = BloomFilter.Load(filePath);
 
             // check again for each input
@@ -204,7 +204,7 @@ namespace PwnedPasswords.BloomFilter.Test
                 filter.Add(input);
             }
 
-            BloomFilter.Save(filter, filePath);
+            filter.Save(filePath);
         }
 
         [Fact]

@@ -8,7 +8,7 @@ namespace PwnedPasswords.BloomFilter
     {
         /// <summary>
         /// Loads a <see cref="BloomFilter"/> from a byte array
-        /// The filter must have been created using <see cref="Save(BloomFilter)"/>
+        /// The filter must have been created using <see cref="Save()"/>
         /// </summary>
         public static BloomFilter Load(byte[] bytes)
         {
@@ -17,7 +17,7 @@ namespace PwnedPasswords.BloomFilter
 
         /// <summary>
         /// Loads a <see cref="BloomFilter"/> from a file
-        /// The filter must have been created using <see cref="Save(BloomFilter)"/>
+        /// The filter must have been created using <see cref="Save()"/>
         /// </summary>
         public static BloomFilter Load(string filePath)
         {
@@ -27,18 +27,17 @@ namespace PwnedPasswords.BloomFilter
         /// <summary>
         /// Save the bloom filter to a byte array, which can later be loaded using <see cref="Load(byte[])"/>
         /// </summary>
-        /// <param name="filter"></param>
-        public static byte[] Save(BloomFilter filter)
+        public byte[] Save()
         {
-            return BloomFilterSerializer.Save(filter);
+            return BloomFilterSerializer.Save(this);
         }
 
         /// <summary>
         /// Saves the bloom filter to a file, which can later be loaded using <see cref="Load(byte[])"/>
         /// </summary>
-        public static void Save(BloomFilter filter, string filePath)
+        public void Save(string filePath)
         {
-            File.WriteAllBytes(filePath, Save(filter));
+            File.WriteAllBytes(filePath, Save());
         }
 
         private class BloomFilterSerializer

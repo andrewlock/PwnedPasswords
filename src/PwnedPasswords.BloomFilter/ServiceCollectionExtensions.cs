@@ -21,9 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
             var filter = BloomFilter.Load(filePath);
 
             return services
-                .AddSingleton<PwnedPasswordsClientFactory>()
                 .AddSingleton<IPwnedPasswordsClient, PwnedPasswordsClient>(provider =>
-                    provider.GetRequiredService<PwnedPasswordsClientFactory>().CreateFromSavedFilter(filePath));
+                    new PwnedPasswordsClient(BloomFilter.Load(filePath)));
         }
     }
 }

@@ -219,12 +219,13 @@ namespace PwnedPasswords.BloomFilter
         /// Generates a "stable" hash, i.e. one that doesn't change based on the run
         /// This shouldn't be favored over <see cref="string.GetHashCode()"/> generally,
         /// but we need something that persists across app domains /program runs
+        /// see https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/Common/src/System/Text/StringOrCharArray.cs#L140
         /// </summary>
         static int GetStableHashCode(string str)
         {
             unchecked
             {
-                int hash1 = 5381;
+                int hash1 = (5381 << 16) + 5381; 
                 int hash2 = hash1;
 
                 for (int i = 0; i < str.Length; i += 2)
