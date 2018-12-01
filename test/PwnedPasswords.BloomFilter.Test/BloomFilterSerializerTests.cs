@@ -14,14 +14,14 @@ namespace PwnedPasswords.BloomFilter.Test
         {
             var requiredCapacity = 128;
             var filter = new BloomFilter(requiredCapacity);
-            var expectedCapacity = filter.HashBits.Count;
+            var expectedCapacity = filter.TotalCapacity;
             var expectedHashFunctions = filter.HashFunctionCount;
 
             var bytes = filter.Save();
             var newFilter = BloomFilter.Load(bytes);
 
             Assert.Equal(expectedHashFunctions, newFilter.HashFunctionCount);
-            Assert.Equal(expectedCapacity, newFilter.HashBits.Count);
+            Assert.Equal(expectedCapacity, newFilter.TotalCapacity);
             Assert.Equal(filter.TotalCapacity, newFilter.TotalCapacity);
             Assert.Equal(filter.ExpectedErrorRate, newFilter.ExpectedErrorRate);
         }
@@ -31,14 +31,14 @@ namespace PwnedPasswords.BloomFilter.Test
         {
             var requiredCapacity = 129;
             var filter = new BloomFilter(requiredCapacity);
-            var expectedCapacity = filter.HashBits.Count;
+            var expectedCapacity = filter.TotalCapacity;
             var expectedHashFunctions = filter.HashFunctionCount;
 
             var bytes = filter.Save();
             var newFilter = BloomFilter.Load(bytes);
 
             Assert.Equal(expectedHashFunctions, newFilter.HashFunctionCount);
-            Assert.Equal(expectedCapacity, newFilter.HashBits.Count);
+            Assert.Equal(expectedCapacity, newFilter.TotalCapacity);
             Assert.Equal(filter.TotalCapacity, newFilter.TotalCapacity);
             Assert.Equal(filter.ExpectedErrorRate, newFilter.ExpectedErrorRate);
         }

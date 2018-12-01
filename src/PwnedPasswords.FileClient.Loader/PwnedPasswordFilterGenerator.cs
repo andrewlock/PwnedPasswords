@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using McMaster.Extensions.CommandLineUtils.Abstractions;
 
 namespace PwnedPasswords.FileClient.Loader
 {
@@ -26,22 +27,45 @@ namespace PwnedPasswords.FileClient.Loader
         public string[] Source { get; }
 
         [Option("-e|--expected-error-rate", CommandOptionType.SingleValue, Description = "The expected error rate to use when generating the filter. Defaults to 0.1%")]
-        [Range(0, 1)]
+        [Range(0f, 1f)]
         public float ExpectedErrorRate { get; } = 0.001f;
 
-        [Option("-p|--minimum-prevalence", CommandOptionType.SingleValue, Description = "The minimum prevalance of passwords to include. Passwords of less than this value will be ignored. Includes all values by default")]
+        [Option("-p|--minimum-prevalence", CommandOptionType.SingleValue, Description = "The minimum prevalence of passwords to include. Passwords of less than this value will be ignored. Includes all values by default")]
         [Range(1, int.MaxValue)]
         public int MinimumPrevalence { get; } = 1;
+
+        [Option("-n|--number-of-passwords", CommandOptionType.SingleValue, Description = "The number of passwords in the file that match the minimum prevalence. Avoids reading file twice when number of passwords is known. Can only be used if you have a single source file")]
+        [Range(1, long.MaxValue)]
+        public long? NumberOfPasswords { get; }
+
+        public ValidationResult OnValidate(ValidationContext context, CommandLineContext appContext)
+        {
+            if (NumberOfPasswords.HasValue && Source.Length != 1)
+            {
+                return new ValidationResult("You can only specify --number-of-passwords if you provide a single file source");
+            }
+
+            return ValidationResult.Success;
+        }
 
         public int OnExecute(CommandLineApplication app, IConsole console)
         {
             // 517238891
             var sw = new Stopwatch();
+            sw.Start();
 
-            var capacities = new int[Source.Length];
-            for (int i = 0; i < Source.Length; i++)
+            var capacities = new long[Source.Length];
+            if (NumberOfPasswords.HasValue)
             {
-                capacities[i] = FilterHelper.CountLinesInPwnedPasswordsFile(Source[i], MinimumPrevalence, console);
+                Debug.Assert(Source.Length == 1);
+                capacities[0] = NumberOfPasswords.Value;
+            }
+            else
+            {
+                for (int i = 0; i < Source.Length; i++)
+                {
+                    capacities[i] = FilterHelper.CountLinesInPwnedPasswordsFile(Source[i], MinimumPrevalence, console);
+                }
             }
 
             var capacity = capacities.Sum();
@@ -65,7 +89,7 @@ namespace PwnedPasswords.FileClient.Loader
             filter.Save(Output);
 
             var duration = sw.Elapsed;
-            console.WriteLine($"Filter saved OK - duration: {duration.ToString()}");
+            console.WriteLine($"Filter saved OK - duration: {duration.ToString("g")}");
 
             return Program.OK;
         }

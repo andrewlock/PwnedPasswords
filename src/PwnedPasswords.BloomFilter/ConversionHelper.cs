@@ -16,6 +16,17 @@ namespace PwnedPasswords.BloomFilter
             return bytes;
         }
 
+        public static byte[] GetAsBytes(this long value)
+        {
+            var bytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(bytes);
+            }
+
+            return bytes;
+        }
+
         public static byte[] GetAsBytes(this float value)
         {
             var bytes = BitConverter.GetBytes(value);
@@ -50,5 +61,18 @@ namespace PwnedPasswords.BloomFilter
             var bytesAsFloat = MemoryMarshal.Cast<byte, float>(data);
             return bytesAsFloat[0];
         }
+
+        public static long GetAsLong(this Span<byte> data)
+        {
+            if (BitConverter.IsLittleEndian)
+            {
+                // data is stored big endian, so if we're little endian we need to reverse the order
+                data.Reverse();
+            }
+
+            var bytesAsLong = MemoryMarshal.Cast<byte, long>(data);
+            return bytesAsLong[0];
+        }
+
     }
 }

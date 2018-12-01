@@ -184,9 +184,23 @@ namespace PwnedPasswords.BloomFilter.Test
         }
 
         [Fact]
-        public void LargeNumberOfValuesCausesOverflow()
+        public void LargeNumberOfValuesDoesNotCauseOverflow()
         {
             const int capacity = 517_238_891;
+            const float errorRate = 0.001f;
+
+            const int expectedShards = 256;
+
+            var filter = new BloomFilter(capacity, errorRate);
+
+            Assert.Equal(expectedShards, filter.Shards.Count);
+            Assert.Equal(capacity, filter.TotalCapacity);
+        }
+
+        [Fact]
+        public void ExceedinglyLargeNumberOfValuesCausesOverflow()
+        {
+            const long capacity = 999_517_238_891;
             const float errorRate = 0.001f;
 
             Assert.Throws<ArgumentOutOfRangeException>(

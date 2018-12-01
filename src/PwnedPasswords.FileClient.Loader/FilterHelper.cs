@@ -46,7 +46,7 @@ namespace PwnedPasswords.FileClient.Loader
         public static int LoadPwnedPasswordsFileIntoFilter(string pwnedPasswordsFile, BloomFilter.BloomFilter filter, int minimumPrevalence, IConsole console)
         {
             var passwordCount = 0;
-            console.WriteLine("Reading passwords in PwnedPasswords file {filename}");
+            console.WriteLine($"Reading passwords in PwnedPasswords file {pwnedPasswordsFile}");
             foreach (var line in File.ReadLines(pwnedPasswordsFile))
             {
                 var span = line.AsSpan();

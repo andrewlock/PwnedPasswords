@@ -44,8 +44,9 @@ namespace PwnedPasswords.BloomFilter
         {
             private const int HeaderBytes =
                 4 // HashFunctionCount
-                + 4 // HashBits.Count (shards)
-                + 4 // Shard Capacity
+                + 4 // BitsPerShard
+                + 4 // NumberOfShards
+                + 8 // TotalCapacity
                 + 4; // ErrorRate
 
             public static BloomFilter Load(byte[] bytes)
@@ -56,43 +57,46 @@ namespace PwnedPasswords.BloomFilter
                 //read the number of hash functions
                 Span<byte> span = bytes;
                 var hashFunctionCount = span.Slice(0, 4).GetAsInt();
-                var shardCount = span.Slice(4, 4).GetAsInt();
-                var shardCapacity = span.Slice(8, 4).GetAsInt();
-                var filterErrorRate = span.Slice(12, 4).GetAsFloat();
-                AssertExpectedLength(bytes, shardCount, shardCapacity);
+                var bitsPerShard = span.Slice(4, 4).GetAsInt();
+                var numberOfShards = span.Slice(8, 4).GetAsInt();
+                var totalCapacity = span.Slice(12, 8).GetAsLong();
+                var errorRate = span.Slice(20, 4).GetAsFloat();
+
+                AssertExpectedLength(bytes, numberOfShards, bitsPerShard);
 
                 var index = HeaderBytes;
-                var bitArrays = new BitArray[shardCount];
-                var shardBytes = GetBytesCount(shardCapacity);
+                var shards = new BitArray[numberOfShards];
+                var bytesPerShard = GetBytesCount(bitsPerShard);
 
-                for (int i = 0; i < shardCount; i++)
+                for (int i = 0; i < numberOfShards; i++)
                 {
-                    var slicedBytes = span.Slice(index, shardBytes).ToArray();
-                    bitArrays[i] = new BitArray(slicedBytes);
-                    bitArrays[i].Length = shardCapacity;
+                    var slicedBytes = span.Slice(index, bytesPerShard).ToArray();
+                    shards[i] = new BitArray(slicedBytes) { Length = bitsPerShard };
+                    index += bytesPerShard;
                 }
 
-                return new BloomFilter(bitArrays, hashFunctionCount, shardCapacity, filterErrorRate);
+                return new BloomFilter(shards, hashFunctionCount,bitsPerShard, totalCapacity, errorRate);
             }
 
             public static byte[] Save(BloomFilter filter)
             {
-                var shardBytes = GetBytesCount(filter.ShardCapacity);
-                var arrayLength = (long)shardBytes*filter.Shards + HeaderBytes;
+                var bytesPerShard = GetBytesCount(filter.BitsPerShard);
+                var arrayLength = (long)bytesPerShard * filter.Shards.Count + HeaderBytes;
                 var data = new byte[arrayLength];
 
                 // save the headers
                 filter.HashFunctionCount.GetAsBytes().CopyTo(data, 0);
-                filter.Shards.GetAsBytes().CopyTo(data, 4);
-                filter.ShardCapacity.GetAsBytes().CopyTo(data, 8);
-                filter.ExpectedErrorRate.GetAsBytes().CopyTo(data, 12);
+                filter.BitsPerShard.GetAsBytes().CopyTo(data, 4);
+                filter.Shards.Count.GetAsBytes().CopyTo(data, 8);
+                filter.TotalCapacity.GetAsBytes().CopyTo(data, 12);
+                filter.ExpectedErrorRate.GetAsBytes().CopyTo(data, 20);
 
                 // now copy the actual data
                 var index = HeaderBytes;
-                foreach (var hashBits in filter.HashBits)
+                foreach (var hashBits in filter.Shards)
                 {
                     hashBits.CopyTo(data, index);
-                    index += shardBytes;
+                    index += bytesPerShard;
                 }
 
                 return data;
