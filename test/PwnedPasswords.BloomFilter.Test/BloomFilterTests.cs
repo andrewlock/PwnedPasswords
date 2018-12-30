@@ -1,6 +1,7 @@
 ﻿// Source code adapted from https://archive.codeplex.com/?p=bloomfilter#BloomFilter/Filter.cs
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace PwnedPasswords.BloomFilter.Test
@@ -141,14 +142,41 @@ namespace PwnedPasswords.BloomFilter.Test
             var target = new BloomFilter(capacity, errorRate);
             for (var i = 0; i < capacity; i++)
             {
-                target.Add(Guid.NewGuid().ToString());
+                target.Add(Guid.NewGuid().ToString("N"));
             }
 
-            var actual = target.Truthiness;
+            Assert.Equal(1, target.Shards.Count);
+            var actual = target.TruthinessPerShard.First();
             var expected = 0.5;
             var threshold = 0.01; // filter shouldn't be < 49% or > 51% "true"
             var difference = Math.Abs(actual - expected);
             Assert.True(difference < threshold, $"Information density too high or low. Actual={actual}, Expected={expected}");
+        }
+
+        /// <summary>
+        /// If k and m are properly chosen for n and the error rate, the filter should be about half full.
+        /// </summary>
+        [Fact(Skip = "Takes a long time to run")]
+        public void TruthinessMultiShardTest()
+        {
+            var capacity = 100_000_000;
+            var errorRate = 0.00001F; // 0.001%
+            var target = new BloomFilter(capacity, errorRate);
+            for (var i = 0; i < capacity; i++)
+            {
+                target.Add(Guid.NewGuid().ToString("N"));
+            }
+
+            Assert.NotEqual(1, target.Shards.Count);
+
+            var expected = 0.5;
+            var threshold = 0.01; // filter shouldn't be < 49% or > 51% "true"
+            for (var i = 0; i < target.TruthinessPerShard.Count; i++)
+            {
+                var actual = target.TruthinessPerShard[i];
+                var difference = Math.Abs(actual - expected);
+                Assert.True(difference < threshold, $"Information density too high or low in shard {i}. Actual={actual}, Expected={expected}");
+            }
         }
 
         private static List<string> GenerateRandomDataList(int capacity)

@@ -12,6 +12,7 @@ namespace PwnedPasswords.BloomFilter
     /// </summary>
     internal partial class BloomFilter
     {
+        private const int ShardIncrement = 16;
         private const int MaxShards = 256;
 
         /// <summary>
@@ -136,21 +137,19 @@ namespace PwnedPasswords.BloomFilter
         }
 
         /// <summary>
-        /// The ratio of false to true bits in the filter. E.g., 1 true bit in a 10 bit filter means a truthiness of 0.1.
+        /// The ratio of false to true bits in each indivual filter. E.g., 1 true bit in a 10 bit filter means a truthiness of 0.1.
         /// </summary>
-        public double Truthiness => (double)TrueBits() / TotalBits;
+        public IReadOnlyList<double> TruthinessPerShard => 
+            Shards.Select(shard => (double)TrueBits(shard) / BitsPerShard).ToList();
 
-        private int TrueBits()
+        private int TrueBits(BitArray bitArray)
         {
             var output = 0;
-            foreach (var shard in Shards)
+            foreach (bool bit in bitArray)
             {
-                foreach (bool bit in shard)
+                if (bit == true)
                 {
-                    if (bit == true)
-                    {
-                        output++;
-                    }
+                    output++;
                 }
             }
             return output;
@@ -170,11 +169,6 @@ namespace PwnedPasswords.BloomFilter
         /// </summary>
         public long TotalCapacity { get; }
 
-        /// <summary>
-        /// The number of bits per shard (m)
-        /// </summary>
-        public long TotalBits => ((long)Shards.Count) * BitsPerShard;
-        
         /// <summary>
         /// The expected error rate for the given <see cref="TotalCapacity"/>
         /// </summary>
@@ -205,7 +199,6 @@ namespace PwnedPasswords.BloomFilter
         private static (int ShardCount, int M) BestM(long capacity, float errorRate)
         {
             // we only use a single set of 256 shards at the moment
-            var shardIncrement = 256; // 1 byte
             var shards = 1;
             while (shards <= MaxShards)
             {
@@ -216,8 +209,8 @@ namespace PwnedPasswords.BloomFilter
                     return (shards, (int)bestM);
                 }
 
-                capacity = capacity / shardIncrement;
-                shards = shards * shardIncrement;
+                capacity = capacity / ShardIncrement;
+                shards = shards * ShardIncrement;
             }
 
             // Still too big for us!
@@ -286,14 +279,39 @@ namespace PwnedPasswords.BloomFilter
 
         private BitArray GetShard(string item)
         {
-            if (Shards.Count == 1 || string.IsNullOrEmpty(item))
+            var shards = Shards.Count;
+            var nibbles = shards / ShardIncrement;
+            if (shards == 1 || string.IsNullOrEmpty(item) || item.Length < nibbles)
             {
                 return Shards[0];
             }
 
-            //we only support 256 shards atm, so keep it simple:
-            var shard = item[0];
+            var shard = 0;
+            for (int i = 0; i < nibbles; i++)
+            {
+                shard = (shard << 4) + GetHexVal(item[i]);
+            }
+
             return Shards[shard];
+        }
+
+        private static int GetHexVal(char hex)
+        {
+            //For uppercase A-F letters:
+            //return hex- (hex < 58 ? 48 : 55);
+            //For lowercase a-f letters:
+            //return val - (val < 58 ? 48 : 87);
+            //Or the two combined, but a bit slower:
+            return hex - (hex < 58 ? 48 : (hex < 97 ? 55 : 87));
+        }
+
+        public string PrettyPrint()
+        {
+            return $@"Filter capacity:         {TotalCapacity:N0}
+Expected FP rate:        {ExpectedErrorRate}
+Number of hash fuctions: {HashFunctionCount}
+Number of shards:        {Shards.Count}
+Bits per shard:          {BitsPerShard}";
         }
     }
 }

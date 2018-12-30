@@ -2,7 +2,7 @@
   "profiles": {
     "PwnedPasswords.FileClient.Loader": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\Sock\\Downloads\\pwned-passwords-1-00001-517238891.filter\" \"C:\\Users\\Sock\\Downloads\\pwned-passwords-ordered-by-count.txt\" -p 1 -e 0.00001 -n 517238891"
+      "commandLineArgs": "create \"C:\\Users\\Sock\\Downloads\\pwned-passwords-5-0001-87246372.filter\" \"C:\\Users\\Sock\\Downloads\\pwned-passwords-ordered-by-count.txt\" -p 5 -e 0.0001 -n 87246372 -v"
     }
   }
 }

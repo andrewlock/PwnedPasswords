@@ -15,7 +15,7 @@ namespace PwnedPasswords.FileClient.Loader
         {
             try
             {
-                return await CommandLineApplication.ExecuteAsync<PwnedPasswordFilterGenerator>(args);
+                return await CommandLineApplication.ExecuteAsync<PwnedPasswordBloomFilterTool>(args);
             }
             catch (Exception ex)
             {
