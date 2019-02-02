@@ -210,6 +210,9 @@ namespace PwnedPasswords.FileClient.Loader
             [FileOrDirectoryExists]
             public string FilterPath { get; }
 
+            [Option("-t|--truthiness", CommandOptionType.NoValue, Description = "If provided, include analysis of the truthiness")]
+            public bool IncludeTruthiness { get; }
+
             public int OnExecute(CommandLineApplication app, IConsole console)
             {
                 BloomFilter.BloomFilter filter;
@@ -226,6 +229,16 @@ namespace PwnedPasswords.FileClient.Loader
 
                 console.WriteLine("Filter loaded successfully.");
                 console.WriteLine(filter.PrettyPrint());
+
+                if (IncludeTruthiness)
+                {
+                    var truthiness = filter.TruthinessPerShard;
+                    var averageTruthiness = truthiness.Average();
+                    var list = truthiness.Select(x => x.ToString("N3"));
+                    
+                    console.WriteLine($"Average truthiness:      {averageTruthiness:N3}");
+                    console.WriteLine($"Truthiness per shard:    {string.Join(",", list)}");
+                }
 
                 return Program.OK;
             }
