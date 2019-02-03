@@ -46,10 +46,10 @@ namespace PwnedPasswords.BloomFilter.Test
 
             // instantiate filter and populate it with a single random value
             var target = new BloomFilter(capacity, errorRate);
-            target.Add(Guid.NewGuid().ToString());
+            target.Add(Guid.NewGuid().ToString("N"));
 
             // generate a new random value and check for it
-            Assert.False(target.Contains(Guid.NewGuid().ToString()), "Check for missing item returned true.");
+            Assert.False(target.Contains(Guid.NewGuid().ToString("N")), "Check for missing item returned true.");
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var target = new BloomFilter(capacity, errorRate);
             for (var i = 0; i < capacity; i++)
             {
-                target.Add(Guid.NewGuid().ToString());
+                target.Add(Guid.NewGuid().ToString("N"));
             }
 
             // generate new random strings and check for them
@@ -73,7 +73,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var expectedFalsePositives = ((int)(testIterations * errorRate)) * 2;
             for (var i = 0; i < testIterations; i++)
             {
-                var test = Guid.NewGuid().ToString();
+                var test = GetHash();
                 if (target.Contains(test) == true)
                 {
                     falsePositives++;
@@ -84,13 +84,18 @@ namespace PwnedPasswords.BloomFilter.Test
                 $"Number of false positives ({falsePositives}) greater than expected ({expectedFalsePositives}).");
         }
 
+        private static string GetHash()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
+
         [Fact]
         public void OverLargeInputTest()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
                 // set filter properties
-                var capacity = int.MaxValue - 1;
+                var capacity = long.MaxValue - 1;
                 var errorRate = 0.01F; // 1%
 
                 // instantiate filter
@@ -109,7 +114,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var target = new BloomFilter(capacity, errorRate);
             for (var i = 0; i < capacity; i++)
             {
-                target.Add(Guid.NewGuid().ToString());
+                target.Add(Guid.NewGuid().ToString("N"));
             }
 
             // if it didn't error out on that much input, this test succeeded
@@ -125,7 +130,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var target = new BloomFilter(capacity);
             for (var i = 0; i < capacity; i++)
             {
-                target.Add(Guid.NewGuid().ToString());
+                target.Add(Guid.NewGuid().ToString("N"));
             }
 
             // if it didn't error out on that much input, this test succeeded
@@ -184,7 +189,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = new List<string>(capacity);
             for (var i = 0; i < capacity; i++)
             {
-                inputs.Add(Guid.NewGuid().ToString());
+                inputs.Add(Guid.NewGuid().ToString("N"));
             }
             return inputs;
         }
@@ -217,7 +222,7 @@ namespace PwnedPasswords.BloomFilter.Test
             const int capacity = 517_238_891;
             const float errorRate = 0.001f;
 
-            const int expectedShards = 256;
+            const int expectedShards = 16;
 
             var filter = new BloomFilter(capacity, errorRate);
 

@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using HashFunction = System.Func<string, int>;
 
 namespace PwnedPasswords.BloomFilter
 {
@@ -92,22 +91,19 @@ namespace PwnedPasswords.BloomFilter
         {
             foreach (var item in items)
             {
-                Add(item);
+                Add(item.AsSpan());
             }
         }
-
-        private readonly HashFunction _primaryHash = GetStableHashCode;
-        private readonly HashFunction _secondaryHash = HashString;
 
         /// <summary>
         /// Adds a new item to the filter. It cannot be removed.
         /// </summary>
-        public void Add(string item)
+        public void Add(ReadOnlySpan<char> item)
         {
             // start flipping bits for each hash of item
             var shard = GetShard(item);
-            var primaryHash = _primaryHash(item);
-            var secondaryHash = _secondaryHash(item);
+            var primaryHash = SpanUtil.GetPrimaryHash(item);
+            var secondaryHash = SpanUtil.GetSecondaryHash(item);
             for (var i = 0; i < HashFunctionCount; i++)
             {
                 var hash = ComputeHash(primaryHash, secondaryHash, i);
@@ -120,11 +116,12 @@ namespace PwnedPasswords.BloomFilter
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool Contains(string item)
+        public bool Contains(string item) => Contains(item.AsSpan());
+        public bool Contains(ReadOnlySpan<char> item)
         {
             var shard = GetShard(item);
-            var primaryHash = _primaryHash(item);
-            var secondaryHash = _secondaryHash(item);
+            var primaryHash = SpanUtil.GetPrimaryHash(item);
+            var secondaryHash = SpanUtil.GetSecondaryHash(item);
             for (var i = 0; i < HashFunctionCount; i++)
             {
                 var hash = ComputeHash(primaryHash, secondaryHash, i);
@@ -277,32 +274,24 @@ namespace PwnedPasswords.BloomFilter
             }
         }
 
-        private BitArray GetShard(string item)
+        private BitArray GetShard(ReadOnlySpan<char> item)
         {
             var shards = Shards.Count;
             var nibbles = shards / ShardIncrement;
-            if (shards == 1 || string.IsNullOrEmpty(item) || item.Length < nibbles)
+            if (shards == 1 || item.Length < nibbles)
             {
                 return Shards[0];
             }
 
             var shard = 0;
-            for (int i = 0; i < nibbles; i++)
+            var length = item.Length;
+            for (int i = 1; i <= nibbles; i++)
             {
-                shard = (shard << 4) + GetHexVal(item[i]);
+                // we use the fist 16 values as the hash, so start from the end
+                shard = (shard << 4) + SpanUtil.GetHexVal(item[item.Length - i]);
             }
 
             return Shards[shard];
-        }
-
-        private static int GetHexVal(char hex)
-        {
-            //For uppercase A-F letters:
-            //return hex- (hex < 58 ? 48 : 55);
-            //For lowercase a-f letters:
-            //return val - (val < 58 ? 48 : 87);
-            //Or the two combined, but a bit slower:
-            return hex - (hex < 58 ? 48 : (hex < 97 ? 55 : 87));
         }
 
         public string PrettyPrint()

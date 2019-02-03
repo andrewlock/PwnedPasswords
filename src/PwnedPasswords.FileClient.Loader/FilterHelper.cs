@@ -61,7 +61,7 @@ namespace PwnedPasswords.FileClient.Loader
                     throw new InvalidFileFormatException($@"The file didn't have the expected format - Prevalance <{numberAsSpan.ToString()}> was not a valid integer: Line <{line}>");
                 }
 
-                var sha = span.Slice(0, spaceIndex).ToString();
+                var sha = span.Slice(0, spaceIndex);
                 filter.Add(sha);
 
                 if (prevalence < minimumPrevalence)
@@ -107,7 +107,7 @@ namespace PwnedPasswords.FileClient.Loader
                     throw new InvalidFileFormatException($@"The file didn't have the expected format - Prevalance <{numberAsSpan.ToString()}> was not a valid integer: Line <{line}>");
                 }
 
-                var sha = span.Slice(0, spaceIndex).ToString();
+                var sha = span.Slice(0, spaceIndex);
                 var isHit = filter.Contains(sha);
 
                 if (prevalence < minimumPrevalence)

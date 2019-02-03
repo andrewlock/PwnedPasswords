@@ -242,7 +242,7 @@ namespace PwnedPasswords.BloomFilter.Test
             var inputs = new List<string>(capacity);
             for (var i = 0; i < capacity; i++)
             {
-                inputs.Add(Guid.NewGuid().ToString());
+                inputs.Add(Guid.NewGuid().ToString("N"));
             }
             return inputs;
         }
@@ -257,7 +257,7 @@ namespace PwnedPasswords.BloomFilter.Test
             {
                 var guid = new byte[16];
                 r.NextBytes(guid);
-                inputs.Add(new Guid(guid).ToString());
+                inputs.Add(new Guid(guid).ToString("N"));
             }
             return inputs;
         }
