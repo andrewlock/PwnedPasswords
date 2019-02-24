@@ -32,17 +32,30 @@ namespace PwnedPasswords.Client.Test
             Assert.True(isPwned, "Checking for Pwned password should return true");
         }
 
-        private static PwnedPasswordsClient GetClient()
+        [Fact, Trait("Category", "Integration")] // don't run it automatically
+        public async Task HasPasswordBeenPwned_WhenWeakPasswordButUnderThresholdViews_ReturnsFalse()
+        {
+            PwnedPasswordsClient service = GetClient(5000);
+
+            var pwnedPassword = "Password1!";
+
+            var isPwned = await service.HasPasswordBeenPwned(pwnedPassword);
+
+            Assert.True(isPwned, "Checking for Pwned password should return true");
+        }
+
+        private static PwnedPasswordsClient GetClient(int minimumFrequencyToConsiderPwned = 1)
         {
             var services = new ServiceCollection();
-            services.AddPwnedPasswordHttpClient();
+            services.AddPwnedPasswordHttpClient(minimumFrequencyToConsiderPwned);
             var provider = services.BuildServiceProvider();
 
             //all called in one method to easily enforce timout
 
             var service = new PwnedPasswordsClient(
                 provider.GetService<IHttpClientFactory>().CreateClient(PwnedPasswordsClient.DefaultName),
-                MockHelpers.StubLogger<PwnedPasswordsClient>());
+                MockHelpers.StubLogger<PwnedPasswordsClient>(),
+                MockHelpers.Options<PwnedPasswordsClientOptions>());
             return service;
         }
     }

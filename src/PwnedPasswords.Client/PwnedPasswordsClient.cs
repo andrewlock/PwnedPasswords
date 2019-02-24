@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace PwnedPasswords.Client
 {
@@ -16,16 +17,18 @@ namespace PwnedPasswords.Client
         /// </summary>
         public const string DefaultName = "PwnedPasswordsClient";
 
-        HttpClient _client;
-        ILogger<PwnedPasswordsClient> _logger;
+        readonly HttpClient _client;
+        readonly ILogger<PwnedPasswordsClient> _logger;
+        readonly PwnedPasswordsClientOptions _options;
 
         /// <summary>
         /// Create a new instance of <see cref="PwnedPasswordsClient"/>
         /// </summary>
-        public PwnedPasswordsClient(HttpClient client, ILogger<PwnedPasswordsClient> logger)
+        public PwnedPasswordsClient(HttpClient client, ILogger<PwnedPasswordsClient> logger, IOptions<PwnedPasswordsClientOptions> options)
         {
             _client = client;
             _logger = logger;
+            _options = options.Value;
         }
 
         /// <inheritdoc />
@@ -42,7 +45,7 @@ namespace PwnedPasswords.Client
                 {
                     // Response was a success. Check to see if the SAH1 suffix is in the response body.
                     var frequency = await Contains(response.Content, sha1Suffix);
-                    var isPwned = (frequency > 0);
+                    var isPwned = (frequency >= _options.MinimumFrequencyToConsiderPwned);
                     if (isPwned)
                     {
                         _logger.LogDebug("HaveIBeenPwned API indicates the password has been pwned");

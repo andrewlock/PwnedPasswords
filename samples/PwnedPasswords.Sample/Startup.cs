@@ -34,7 +34,7 @@ namespace PwnedPasswords.Sample
 
             // Explicitly configure the PwnedPassword client to timeout after 2 seconds, and retry 3 times
             // The pwnedpassword API achieves 99% percentile of <1s, so this should be sufficient!
-            services.AddPwnedPasswordHttpClient()
+            services.AddPwnedPasswordHttpClient(minimumFrequencyToConsiderPwned: 20)
                   .AddTransientHttpErrorPolicy(p => p.RetryAsync(3))
                   .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(2)));
 

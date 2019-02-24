@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using PwnedPasswords.Client;
 using PwnedPasswords.Validator;
@@ -32,16 +31,34 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The Microsoft.AspNetCore.Identity.IdentityBuilder instance this method extends</param>
         /// <param name="configure">Configure the options for the Validator</param>
         /// <typeparam name="TUser">The user type whose password will be validated.</typeparam>
-        /// <returns>The current Microsoft.AspNetCore.Identity.IdentityBuilder instance.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public static IdentityBuilder AddPwnedPasswordValidator<TUser>(
-            this IdentityBuilder builder, Action<PwnedPasswordValidatorOptions> configure) 
+            this IdentityBuilder builder, Action<PwnedPasswordValidatorOptions> configure)
             where TUser : class
         {
-            if(!builder.Services.Any(x=>x.ServiceType == typeof(IPwnedPasswordsClient)))
+            return builder.AddPwnedPasswordValidator<TUser>(configure: opts => { }, configureClient: opts => { });
+        }
+
+        /// <summary>
+        /// Adds a password validator that checks the password is not a pwned password using the Have I been pwned API
+        /// See https://haveibeenpwned.com/API/v2#PwnedPasswords for details.
+        /// </summary>
+        /// <param name="builder">The Microsoft.AspNetCore.Identity.IdentityBuilder instance this method extends</param>
+        /// <param name="configure">Configure the options for the Validator</param>
+        /// <param name="configureClient">A delegate that is used to configure the <see cref="PwnedPasswordsClientOptions"/></param>
+        /// <typeparam name="TUser">The user type whose password will be validated.</typeparam>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+        public static IdentityBuilder AddPwnedPasswordValidator<TUser>(
+            this IdentityBuilder builder, Action<PwnedPasswordValidatorOptions> configure,
+            Action<PwnedPasswordsClientOptions> configureClient)
+            where TUser : class
+        {
+            if (!builder.Services.Any(x => x.ServiceType == typeof(IPwnedPasswordsClient)))
             {
                 builder.Services.AddPwnedPasswordHttpClient();
             }
-            builder.Services.Configure<PwnedPasswordValidatorOptions>(configure);
+            builder.Services.Configure(configure);
+            builder.Services.Configure(configureClient);
             return builder.AddPasswordValidator<PwnedPasswordValidator<TUser>>();
         }
     }
