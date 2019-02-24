@@ -54,6 +54,7 @@ namespace PwnedPasswords.Client.Test
             stub.SetupGet(x => x.Value).Returns(options);
             return stub.Object;
         }
+
         public static IOptions<T> Options<T>() where T : class, new()
         {
             return Options(new T());

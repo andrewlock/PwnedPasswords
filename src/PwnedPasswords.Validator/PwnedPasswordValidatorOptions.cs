@@ -1,11 +1,9 @@
-﻿using PwnedPasswords.Client;
-
-namespace PwnedPasswords.Validator
+﻿namespace PwnedPasswords.Validator
 {
     /// <summary>
     /// Options for configuring the <see cref="PwnedPasswordValidator{TUser}"/>
     /// </summary>
-    public class PwnedPasswordValidatorOptions: PwnedPasswordsClientOptions
+    public class PwnedPasswordValidatorOptions
     {
         /// <summary>
         /// The error message to display when a breached password is used.

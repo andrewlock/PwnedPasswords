@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IdentityBuilder builder, Action<PwnedPasswordValidatorOptions> configure)
             where TUser : class
         {
-            return builder.AddPwnedPasswordValidator<TUser>(configure: opts => { }, configureClient: opts => { });
+            return builder.AddPwnedPasswordValidator<TUser>(configure, configureClient: opts => { });
         }
 
         /// <summary>

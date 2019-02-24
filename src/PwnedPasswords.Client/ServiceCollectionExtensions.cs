@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
-        /// <param name="configureHttpClient">A delegate that is used to configure the <see cref="HttpClient"/> used by <see cref="IPwnedPasswordsClient"/></param>
+        /// <param name="configureClient">A delegate that is used to configure the <see cref="HttpClient"/> used by <see cref="IPwnedPasswordsClient"/></param>
         /// <returns>An <see cref="IHttpClientBuilder"/>that can be used to configure the client.</returns>
         /// <remarks>
         ///  <see cref="HttpClient"/> instances that apply the provided configuration can
@@ -26,9 +26,9 @@ namespace Microsoft.Extensions.DependencyInjection
         ///  can be retrieved from <see cref="System.IServiceProvider.GetService(System.Type)"/> (and related
         ///  methods) by providing <see cref="IPwnedPasswordsClient"/> as the service type.
         /// </remarks>
-        public static IHttpClientBuilder AddPwnedPasswordHttpClient(this IServiceCollection services, string name, Action<HttpClient> configureHttpClient)
+        public static IHttpClientBuilder AddPwnedPasswordHttpClient(this IServiceCollection services, string name, Action<HttpClient> configureClient)
         {
-            return services.AddPwnedPasswordHttpClient(name, configureHttpClient, options => { });
+            return services.AddPwnedPasswordHttpClient(name, configureClient, options => { });
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
-        /// <param name="configureHttpClient">A delegate that is used to configure the <see cref="HttpClient"/> used by <see cref="IPwnedPasswordsClient"/></param>
+        /// <param name="configureClient">A delegate that is used to configure the <see cref="HttpClient"/> used by <see cref="IPwnedPasswordsClient"/></param>
         /// <param name="configureOptions">A delegate that is used to configure the <see cref="PwnedPasswordsClientOptions"/></param>
         /// <returns>An <see cref="IHttpClientBuilder"/>that can be used to configure the client.</returns>
         /// <remarks>
@@ -49,10 +49,10 @@ namespace Microsoft.Extensions.DependencyInjection
         ///  methods) by providing <see cref="IPwnedPasswordsClient"/> as the service type.
         /// </remarks>
         public static IHttpClientBuilder AddPwnedPasswordHttpClient(this IServiceCollection services, string name,
-            Action<HttpClient> configureHttpClient, Action<PwnedPasswordsClientOptions> configureOptions)
+            Action<HttpClient> configureClient, Action<PwnedPasswordsClientOptions> configureOptions)
         {
             services.Configure(configureOptions);
-            return services.AddHttpClient<IPwnedPasswordsClient, PwnedPasswordsClient>(name, configureHttpClient);
+            return services.AddHttpClient<IPwnedPasswordsClient, PwnedPasswordsClient>(name, configureClient);
         }
 
         /// <summary>
