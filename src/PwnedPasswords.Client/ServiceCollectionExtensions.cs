@@ -9,6 +9,11 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class ServiceCollectionExtensions
     {
+        private static readonly Action<HttpClient> DefaultConfigureClientFunction = client =>
+        {
+            client.BaseAddress = new Uri("https://api.pwnedpasswords.com");
+            client.DefaultRequestHeaders.Add("User-Agent", nameof(PwnedPasswordsClient));
+        };
 
         /// <summary>
         /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/>
@@ -117,7 +122,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IHttpClientBuilder AddPwnedPasswordHttpClient(this IServiceCollection services)
         {
-            return services.AddPwnedPasswordHttpClient(1);
+            return services.AddPwnedPasswordHttpClient(PwnedPasswordsClient.DefaultName, DefaultConfigureClientFunction);
         }
 
         /// <summary>
@@ -139,11 +144,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IHttpClientBuilder AddPwnedPasswordHttpClient(this IServiceCollection services, int minimumFrequencyToConsiderPwned)
         {
-            return services.AddPwnedPasswordHttpClient(PwnedPasswordsClient.DefaultName, client =>
-            {
-                client.BaseAddress = new Uri("https://api.pwnedpasswords.com");
-                client.DefaultRequestHeaders.Add("User-Agent", nameof(PwnedPasswordsClient));
-            }, opts => opts.MinimumFrequencyToConsiderPwned = minimumFrequencyToConsiderPwned);
+            return services.AddPwnedPasswordHttpClient(DefaultConfigureClientFunction,
+                opts => opts.MinimumFrequencyToConsiderPwned = minimumFrequencyToConsiderPwned);
         }
     }
 }
