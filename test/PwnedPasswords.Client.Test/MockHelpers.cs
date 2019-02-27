@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace PwnedPasswords.Client.Test
@@ -45,6 +46,18 @@ namespace PwnedPasswords.Client.Test
         {
             var stub = new Mock<ILogger<T>>();
             return stub.Object;
+        }
+
+        public static IOptions<T> Options<T>(T options) where T : class, new()
+        {
+            var stub = new Mock<IOptions<T>>();
+            stub.SetupGet(x => x.Value).Returns(options);
+            return stub.Object;
+        }
+
+        public static IOptions<T> Options<T>() where T : class, new()
+        {
+            return Options(new T());
         }
     }
 }

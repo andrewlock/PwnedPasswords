@@ -68,6 +68,26 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+You can also choose the minimum number of times a password must have appeared in a breach for it to be considered "pwned". So for example, if you only want to consider passwords that have appeared 20 times as pwned you can use the overload on `AddPwnedPasswordHttpClient()`:
+
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddPwnedPasswordHttpClient(minimumFrequencyToConsiderPwned: 20);
+}
+```
+
+You can also configure this using the standard Options pattern in ASP.NET Core, for example by loading the required value from a JSON value.
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddPwnedPasswordHttpClient();
+    services.Configure<PwnedPasswordsClientOptions>(Configuration.GetSection("PwnedPasswords"));
+}
+```
+
 ## PwnedPasswords.Validator
 
 _PwnedPasswords.Validator_ contains an implementation of an [ASP.NET Core Identity](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/identity) `IPasswordValidator` that verifies the provided password has not been exposed in a known security breach.
@@ -97,6 +117,20 @@ public void ConfigureServices(IServiceCollection services)
         .AddPwnedPasswordValidator<IdentityUser>(); // add the validator
 
     // other configuration
+}
+```
+
+As for the `PwnedPasswordsClient` library, you can customize the minimum number of times a password must have appeared in a breach for it to be considered invalid by the validator. For example:
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddDefaultIdentity<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddPwnedPasswordValidator<IdentityUser>(); // add the validator
+
+    // set the minimum password to consider the password pwned
+    services.Configure<PwnedPasswordsClientOptions>(Configuration.GetSection("PwnedPasswords"));
 }
 ```
 
