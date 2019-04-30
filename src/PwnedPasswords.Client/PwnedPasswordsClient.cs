@@ -43,7 +43,7 @@ namespace PwnedPasswords.Client
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Response was a success. Check to see if the SAH1 suffix is in the response body.
+                    // Response was a success. Check to see if the SHA1 suffix is in the response body.
                     var frequency = await Contains(response.Content, sha1Suffix);
                     var isPwned = (frequency >= _options.MinimumFrequencyToConsiderPwned);
                     if (isPwned)
@@ -56,7 +56,7 @@ namespace PwnedPasswords.Client
                     }
                     return isPwned;
                 }
-                _logger.LogWarning("Unexepected response from API: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Unexpected response from API: {StatusCode}", response.StatusCode);
             }
             catch (Exception ex)
             {
