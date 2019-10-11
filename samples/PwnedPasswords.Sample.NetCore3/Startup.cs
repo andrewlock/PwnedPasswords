@@ -41,7 +41,8 @@ namespace PwnedPasswords.Sample.NetCore3
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddPwnedPasswordValidator<IdentityUser>();
+                .AddPwnedPasswordValidator<IdentityUser>()
+                .AddPwnedPasswordErrorDescriber<CustomErrorDescriber>();
             services.AddRazorPages();
         }
 
