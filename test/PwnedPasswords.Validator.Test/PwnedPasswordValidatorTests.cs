@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,8 +13,9 @@ namespace PwnedPasswords.Validator.Test
     public class PwnedPasswordValidatorTests
     {
         const string _error = "The password you chose has appeared in a data breach.";
-        readonly IOptions<PwnedPasswordValidatorOptions> Settings = 
-            Options.Create(new PwnedPasswordValidatorOptions { ErrorMessage = _error });
+
+        private readonly PwnedPasswordErrorDescriber Describer =
+            new PwnedPasswordErrorDescriber(Options.Create(new PwnedPasswordValidatorOptions {ErrorMessage = _error}));
 
         [Fact]
         public void ValidateThrowsWithNullClientTest()
@@ -21,7 +23,7 @@ namespace PwnedPasswords.Validator.Test
             // Setup
             // Act
             // Assert
-            Assert.Throws<ArgumentNullException>("client", () => new PwnedPasswordValidator<TestUser>(null, Settings));
+            Assert.Throws<ArgumentNullException>("client", () => new PwnedPasswordValidator<TestUser>(null, Describer));
         }
 
         [Fact]
@@ -31,7 +33,7 @@ namespace PwnedPasswords.Validator.Test
 
             string input = null;
             var manager = MockHelpers.TestUserManager<TestUser>();
-            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Settings);
+            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Describer);
 
             IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, null, input));
         }
@@ -43,7 +45,7 @@ namespace PwnedPasswords.Validator.Test
 
             var input = string.Empty;
             var manager = MockHelpers.TestUserManager<TestUser>();
-            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Settings);
+            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Describer);
 
             IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, null, input));
         }
@@ -57,7 +59,7 @@ namespace PwnedPasswords.Validator.Test
 
             var input = "password";
             var manager = MockHelpers.TestUserManager<TestUser>();
-            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Settings);
+            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Describer);
 
             IdentityResultAssert.IsFailure(await validator.ValidateAsync(manager, null, input), _error);
         }
@@ -71,10 +73,38 @@ namespace PwnedPasswords.Validator.Test
 
             var input = "password";
             var manager = MockHelpers.TestUserManager<TestUser>();
-            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Settings);
+            var validator = new PwnedPasswordValidator<TestUser>(client.Object, Describer);
 
             IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, null, input));
         }
         
+        [Fact]
+        public async Task ReturnsMessageFromOverriddenDescriber()
+        {
+            var client = new Mock<IPwnedPasswordsClient>();
+            client.Setup(x => x.HasPasswordBeenPwned(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            var input = "password";
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            var validator = new PwnedPasswordValidator<TestUser>(client.Object, new OverriddenErrorDescriber());
+
+            IdentityResultAssert.IsFailure(await validator.ValidateAsync(manager, null, input),
+                OverriddenErrorDescriber.OverriddenDescription);
+        }
+
+        private class OverriddenErrorDescriber : PwnedPasswordErrorDescriber
+        {
+            public const string OverriddenDescription = "Overridden description";
+
+            public override IdentityError PwnedPassword()
+            {
+                return new IdentityError
+                {
+                    Code = nameof(PwnedPassword),
+                    Description = OverriddenDescription
+                };
+            }
+        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using PwnedPasswords.Client;
 
 namespace PwnedPasswords.Validator
@@ -14,16 +13,23 @@ namespace PwnedPasswords.Validator
         where TUser : class
     {
         private readonly IPwnedPasswordsClient _client;
-        private readonly PwnedPasswordValidatorOptions _options;
 
         /// <summary>
         /// Create a new instance of the <see cref="PwnedPasswordValidator{TUser}"/>
         /// </summary>
-        public PwnedPasswordValidator(IPwnedPasswordsClient client, IOptions<PwnedPasswordValidatorOptions> options)
+        public PwnedPasswordValidator(IPwnedPasswordsClient client, PwnedPasswordErrorDescriber describer)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
-            _options = options.Value;
+            Describer = describer ?? throw new ArgumentNullException(nameof(describer));
         }
+
+        /// <summary>
+        /// Gets the <see cref="PwnedPasswordErrorDescriber"/> used to supply error text.
+        /// </summary>
+        /// <value>
+        /// The <see cref="PwnedPasswordErrorDescriber"/> used to supply error text.
+        /// </value>
+        public PwnedPasswordErrorDescriber Describer { get; }
 
         /// <inheritdoc />
         public async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
@@ -35,11 +41,7 @@ namespace PwnedPasswords.Validator
             }
 
             var result = isPwned
-                ? IdentityResult.Failed(new IdentityError
-                {
-                    Code = "PwnedPassword",
-                    Description = _options.ErrorMessage,
-                })
+                ? IdentityResult.Failed(Describer.PwnedPassword())
                 : IdentityResult.Success;
 
             return result;

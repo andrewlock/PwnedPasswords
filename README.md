@@ -134,6 +134,50 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+### Customizing Error Messages
+
+For simple scenarios, you can customize the error message for invalid passwords by configuring the validation options. For example:
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddDefaultIdentity<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddPwnedPasswordValidator<IdentityUser>(options => 
+        options.ErrorMessage = "My custom message"); // set the error message
+}
+```
+
+If you need more control over the message - for example, if you want to use the request culture to localize the message text - you can implement your own subclass of `PwnedPasswordErrorDescriber`. For example:
+
+```csharp
+public class CustomErrorDescriber : PwnedPasswordErrorDescriber
+{
+    public override IdentityError PwnedPassword()
+    {
+        return new IdentityError
+        {
+            Code = nameof(PwnedPassword),
+            Description = Resources.PwnedPasswordError
+        };
+    }
+}
+
+```
+
+You can register your custom class by using the `AddPwnedPasswordErrorDescriber` extension method.
+
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddDefaultIdentity<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddPwnedPasswordValidator<IdentityUser>()
+    .AddPwnedPasswordErrorDescriber<CustomErrorDescriber>();
+}
+```
+
 
 ## Additional Resources
 * [Have I been pwned API](https://haveibeenpwned.com/Passwords)

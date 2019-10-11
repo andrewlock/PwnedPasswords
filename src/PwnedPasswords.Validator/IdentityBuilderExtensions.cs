@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PwnedPasswords.Client;
 using PwnedPasswords.Validator;
 
@@ -59,7 +60,21 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             builder.Services.Configure(configure);
             builder.Services.Configure(configureClient);
+            builder.Services.TryAddScoped<PwnedPasswordErrorDescriber>();
             return builder.AddPasswordValidator<PwnedPasswordValidator<TUser>>();
+        }
+
+        /// <summary>
+        /// Adds a <see cref="PwnedPasswordErrorDescriber"/>
+        /// </summary>
+        /// <typeparam name="TDescriber">The type of the error describer.</typeparam>
+        /// <param name="builder">The <see cref="IdentityBuilder"/> instance.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> instance.</returns>
+        public static IdentityBuilder AddPwnedPasswordErrorDescriber<TDescriber>(this IdentityBuilder builder) 
+            where TDescriber : PwnedPasswordErrorDescriber
+        {
+            builder.Services.AddScoped<PwnedPasswordErrorDescriber, TDescriber>();
+            return builder;
         }
     }
 }
