@@ -1,0 +1,29 @@
+<Project>
+
+  <Import Project="version.props" />
+
+  <PropertyGroup>
+    <Authors>Andrew Lock</Authors>
+    <Copyright>Copyright © AndrewLock</Copyright>
+    <NeutralLanguage>en-GB</NeutralLanguage>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/andrewlock/PwnedPasswords</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/andrewlock/PwnedPasswords/master/logo.png</PackageIconUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/andrewlock/PwnedPasswords</RepositoryUrl>
+    <DebugType>embedded</DebugType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <Import Project="releasenotes.props" />
+
+</Project>
