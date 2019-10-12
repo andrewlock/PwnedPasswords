@@ -8,7 +8,7 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/andrewlock/PwnedPasswords</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/andrewlock/PwnedPasswords/master/logo.png</PackageIconUrl>
+    <PackageIcon>logo.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/andrewlock/PwnedPasswords</RepositoryUrl>
@@ -23,6 +23,10 @@
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\logo.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <Import Project="releasenotes.props" />
 
