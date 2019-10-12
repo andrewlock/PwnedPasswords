@@ -126,8 +126,8 @@ As for the `PwnedPasswordsClient` library, you can customize the minimum number 
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddDefaultIdentity<IdentityUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddPwnedPasswordValidator<IdentityUser>(); // add the validator
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddPwnedPasswordValidator<IdentityUser>(); // add the validator
 
     // set the minimum password to consider the password pwned
     services.Configure<PwnedPasswordsClientOptions>(Configuration.GetSection("PwnedPasswords"));
@@ -142,9 +142,9 @@ For simple scenarios, you can customize the error message for invalid passwords 
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddDefaultIdentity<IdentityUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddPwnedPasswordValidator<IdentityUser>(options => 
-        options.ErrorMessage = "My custom message"); // set the error message
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddPwnedPasswordValidator<IdentityUser>(options => 
+            options.ErrorMessage = "My custom message"); // set the error message
 }
 ```
 
@@ -172,9 +172,9 @@ You can register your custom class by using the `AddPwnedPasswordErrorDescriber`
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddDefaultIdentity<IdentityUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddPwnedPasswordValidator<IdentityUser>()
-    .AddPwnedPasswordErrorDescriber<CustomErrorDescriber>();
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddPwnedPasswordValidator<IdentityUser>()
+        .AddPwnedPasswordErrorDescriber<CustomErrorDescriber>();
 }
 ```
 
