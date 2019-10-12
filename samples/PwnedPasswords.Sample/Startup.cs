@@ -43,7 +43,8 @@ namespace PwnedPasswords.Sample
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddPwnedPasswordValidator<IdentityUser>();
+                .AddPwnedPasswordValidator<IdentityUser>(opts 
+                    => opts.ErrorMessage = "The password is not safe!");
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
