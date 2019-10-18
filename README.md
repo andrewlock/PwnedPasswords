@@ -13,12 +13,12 @@
 [validator-nuget-badge]: https://img.shields.io/nuget/v/PwnedPasswords.Validator.svg?style=flat-square&label=PwnedPasswords.Validator
 
 
-# [PwnedPasswords.Client](#PwnedPasswords-Client) and [PwnedPasswords.Validator](#PwnedPasswords-Validator)
+# [PwnedPasswords.Client](#PwnedPasswordsClient) and [PwnedPasswords.Validator](#PwnedPasswordsValidator)
 
 This repository contains two libraries, _PwnedPasswords.Client_ and _PwnedPasswords.Validator_. 
 
-* [PwnedPasswords.Validator](#PwnedPasswords-Validator) contains a [.NET Core 2.1 Typed HttpClient](https://blogs.msdn.microsoft.com/webdev/2018/02/28/asp-net-core-2-1-preview1-introducing-httpclient-factory/) (compatible with .NET Standard 2.0 and .NET Core 3.0) for accessing [Troy Hunt](https://twitter.com/troyhunt)'s [Have I Been Pwned passwords service](https://haveibeenpwned.com/Passwords).
-* _PwnedPasswords.Validator_ contains an implementation of an [ASP.NET Core Identity](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/identity) `IPasswordValidator` that verifies the provided password has not been exposed in a known security breach.
+* [PwnedPasswords.Client](#PwnedPasswordsClient) contains a [.NET Core 2.1 Typed HttpClient](https://blogs.msdn.microsoft.com/webdev/2018/02/28/asp-net-core-2-1-preview1-introducing-httpclient-factory/) (compatible with .NET Standard 2.0 and .NET Core 3.0) for accessing [Troy Hunt](https://twitter.com/troyhunt)'s [Have I Been Pwned passwords service](https://haveibeenpwned.com/Passwords).
+* [PwnedPasswords.Validator](#PwnedPasswordsValidator) contains an implementation of an [ASP.NET Core Identity](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/identity) `IPasswordValidator` that verifies the provided password has not been exposed in a known security breach.
 
 ## Why should you care?
 
