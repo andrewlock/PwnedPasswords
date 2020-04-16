@@ -1,12 +1,11 @@
 <Project>
   <PropertyGroup>
-    <PackageReleaseNotes Condition="'$(VersionPrefix)' == '1.2.0'">
+    <PackageReleaseNotes Condition="'$(VersionPrefix)' == '1.3.0'">
       <![CDATA[
 
 Features:
 
-* Add support for ASP.NET Core 3.0
-* Add support for localising the PwnedPassword Validator error message #18, #17 thanks @richtea
+* Add support for Add-Padding header.
 
 ]]>
     </PackageReleaseNotes>

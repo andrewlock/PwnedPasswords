@@ -78,6 +78,14 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+For extra privacy, you can enable the [extra padding feature](https://www.troyhunt.com/enhancing-pwned-passwords-privacy-with-padding/) of the API. See the lined post for details.
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddPwnedPasswordHttpClient(addPadding: true);
+}
+```
+
 You can also configure this using the standard Options pattern in ASP.NET Core, for example by loading the required value from a JSON value.
 
 ```csharp

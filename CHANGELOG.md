@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0]
+
+Features:
+
+* Add support for [Add-Padding header](https://www.troyhunt.com/enhancing-pwned-passwords-privacy-with-padding/).
+
+[v1.3.0]: https://github.com/andrewlock/NetEscapades.AspNetCore.SecurityHeaders/compare/v1.3.0...1.2.0
+
 ## [1.2.0]
 
 Features:
