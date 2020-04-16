@@ -8,10 +8,11 @@ namespace PwnedPasswords.Client.Test
 {
     public class HaveIBeenPwnedClientTests
     {
-        [Fact, Trait("Category", "Integration")] // don't run it automatically
-        public async Task HasPasswordBeenPwned_WhenStrongPassword_ReturnsFalse()
+        [Theory, Trait("Category", "Integration")] // don't run it automatically
+        [InlineData(false), InlineData(true)]
+        public async Task HasPasswordBeenPwned_WhenStrongPassword_ReturnsFalse(bool addPadding)
         {
-            PwnedPasswordsClient service = GetClient();
+            PwnedPasswordsClient service = GetClient(addPadding: addPadding);
 
             var safePassword = "657ed4b7-954a-4777-92d7-eb887eb8025eaa43e773-9f62-42f6-b717-a15e6fef8751";
 
@@ -20,10 +21,11 @@ namespace PwnedPasswords.Client.Test
             Assert.False(isPwned, "Checking for safe password should return false");
         }
 
-        [Fact, Trait("Category", "Integration")] // don't run it automatically
-        public async Task HasPasswordBeenPwned_WhenWeakPassword_ReturnsTrue()
+        [Theory, Trait("Category", "Integration")] // don't run it automatically
+        [InlineData(false), InlineData(true)]
+        public async Task HasPasswordBeenPwned_WhenWeakPassword_ReturnsTrue(bool addPadding)
         {
-            PwnedPasswordsClient service = GetClient();;
+            PwnedPasswordsClient service = GetClient(addPadding: addPadding);
 
             var pwnedPassword = "password";
 
@@ -32,10 +34,11 @@ namespace PwnedPasswords.Client.Test
             Assert.True(isPwned, "Checking for Pwned password should return true");
         }
 
-        [Fact, Trait("Category", "Integration")] // don't run it automatically
-        public async Task HasPasswordBeenPwned_WhenWeakPasswordButUnderThresholdViews_ReturnsFalse()
+        [Theory, Trait("Category", "Integration")] // don't run it automatically
+        [InlineData(false), InlineData(true)]
+        public async Task HasPasswordBeenPwned_WhenWeakPasswordButUnderThresholdViews_ReturnsFalse(bool addPadding)
         {
-            PwnedPasswordsClient service = GetClient(5000);
+            PwnedPasswordsClient service = GetClient(5000, addPadding: addPadding);
 
             var pwnedPassword = "Password1!";
 
@@ -44,10 +47,10 @@ namespace PwnedPasswords.Client.Test
             Assert.True(isPwned, "Checking for Pwned password should return true");
         }
 
-        private static PwnedPasswordsClient GetClient(int minimumFrequencyToConsiderPwned = 1)
+        private static PwnedPasswordsClient GetClient(int minimumFrequencyToConsiderPwned = 1, bool addPadding = false)
         {
             var services = new ServiceCollection();
-            services.AddPwnedPasswordHttpClient(minimumFrequencyToConsiderPwned);
+            services.AddPwnedPasswordHttpClient(minimumFrequencyToConsiderPwned, addPadding);
             var provider = services.BuildServiceProvider();
 
             //all called in one method to easily enforce timout

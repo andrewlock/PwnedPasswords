@@ -11,5 +11,12 @@
         /// or more will be considered Pwned. Defaults to 1 (so all pwned passwords are considered)
         /// </summary>
         public int MinimumFrequencyToConsiderPwned { get; set; } = 1;
+
+        /// <summary>
+        /// If true, requests for the API to add padding to the response.
+        /// This adds an additional layer of privacy, but uses more bandwidth. Defaults to false.
+        /// See the blog post for details: https://www.troyhunt.com/enhancing-pwned-passwords-privacy-with-padding/ 
+        /// </summary>
+        public bool AddPadding { get; set; } = false;
     }
 }
