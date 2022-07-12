@@ -41,7 +41,7 @@ namespace PwnedPasswords.Sample
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>()
+            services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddPwnedPasswordValidator<IdentityUser>(opts 
                     => opts.ErrorMessage = "The password is not safe!");
@@ -56,7 +56,6 @@ namespace PwnedPasswords.Sample
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
             else
             {
